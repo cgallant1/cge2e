@@ -1,4 +1,3 @@
-#encoding: utf-8
 require "data_mapper"
 require "sinatra"
 
