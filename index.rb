@@ -8,15 +8,6 @@ require "json"
 require "cgi"
 
 get '/environment' do
-	# if development?
-	# "development"
-	# elsif production?
-	# "production"
-	# elsif test?
-	# "test"
-	# else
-	# "Who knows what environment you're in!"
-	# end
 	if settings.development?
 		"development!"
 	else
@@ -25,15 +16,10 @@ get '/environment' do
 end
 
 get "/login" do
-
 	erb :login
 end
 
-# get "/json" do
-# 	erb :json
-# end
-
-# demo for submit the Json data
+# submit the Json data
 get "/submitjson/:appname" do
 	conditions = params[:appname]
 	conditions = conditions.split("|")
