@@ -43,10 +43,6 @@
 
 				//trigger submit data
 				$('#submit_data').on('click',function(){
-					// myApp.showPleaseWait();
-				 
-					// Stop form from submitting normally
-					// event.preventDefault();
 
 					// Get some values from elements on the page:
 					var $form = $('#submit_data');
@@ -121,23 +117,6 @@
 						            		Ladda.stopAll();	
 					        			}
 						        	});
-						        	
-									/*BootstrapDialog.show({
-						        		type: BootstrapDialog.TYPE_DANGER,
-										title: 'Flow Data Save Error', 
-										message: xhr.status + ' : ' + thrownError + '\n\n' + xhr.responseText,
-							            buttons: [{
-							                label: 'Close',
-							                cssClass: 'btn-danger',
-							                action: function(dialogItself){
-							                    dialogItself.close();
-							                }
-							            }],
-							            onhidden: function(dialogRef){
-							            	$('#submit_data').attr('disabled', false);
-							            	Ladda.stopAll();
-						        		}
-							        });*/
 								});								
 							} else {
 						        BootstrapDialog.show({
@@ -176,11 +155,9 @@
 			        		}
 				        });
 					}
-					// myApp.hidePleaseWait();
 				})
 
 				$('#sequp').click(function() {
-					// myApp.showPleaseWait();
 					// Move selected apps up 1 spot if possible
 				    $('#select2 option:selected').each( function() {
 				        var newPos = $('#select2 option').index(this) - 1;
@@ -203,37 +180,21 @@
 				    });	
 				});
 
-			    //移到右边
 			    $('#add').click(function() {
-			    //获取选中的选项，删除并追加给对方
 			        $('#select2').append($('#select1 option:selected').clone());
-			        //var appval = '<option value="'+$('#select1 option:selected').val()+'" selected>'+$('#select1 option:selected').val()+'</option>';
-			        //alert("124");
-			        // $('#select1 option:selected').appendTo('#select2');
-			        
-			        // $('#select1').before(appval);
-
 			    });
-			    //移到左边
 			    $('#remove').click(function() {
 			        $('#select2 option:selected').remove();
 			    });
-			    //全部移到右边
 			    $('#add_all').click(function() {
-			        //获取全部的选项,删除并追加给对方
 			         $('#select2').append($('#select1 option').clone());
 			    });
-			    //全部移到左边
 			    $('#remove_all').click(function() {
-			        //$('#select2 option').appendTo('#select1');
 			        $('#select2 option').remove();
 			    });
-			    //双击选项
-			    $('#select1').dblclick(function(){ //绑定双击事件
-			        //获取全部的选项,删除并追加给对方
-			        $("option:selected",this).appendTo('#select2'); //追加给对方
+			    $('#select1').dblclick(function(){ 
+			        $("option:selected",this).appendTo('#select2');
 			    });
-			    //双击选项
 			    $('#select2').dblclick(function(){
 			       $("option:selected",this).appendTo('#select1');
 			    });
@@ -285,7 +246,6 @@
 	<body>
 		<header class="navbar navbar-default navbar-static-top" style="height:58px; border-color: #e7e7e7;border-bottom: 1px solid transparent;">
 			<div class="container" style="padding-left: 0px;">
-				<img src="/img/HP-Log/HP_Blue_RGB_150_MN.png" class="img-responsive pull-left" alt="Responsive image">
 				<a href="/main#" class="navbar-brand" style="padding-top:15px;">E2E Testing Library</a>
 			<button class="navbar-toggle" data-toggle="collapse" data-target=".navHeaderCollapse">
 				<span class="icon-bar"></span>
