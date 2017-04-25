@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+	    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+	    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	    <title>Import Test Cases</title>
+
+	    <!-- Custom CSS Settings -->
+	    <link href="/css/E2E_Custom.css" rel="stylesheet">
+	    <link href="/css/bootstrap.min.css" rel="stylesheet">
+		<link href="/css/flat-ui.css" rel="stylesheet">
+		<link href="/css/demo.css" rel="stylesheet">
+		<link href="/css/bootstrap-theme.css" rel="stylesheet">
+		<link href="/css/user-dropdown.css" rel="stylesheet">
+
+		<!-- jQuery -->
+		<script src="/js/jquery-2.0.2.min.js"></script>
+
+		<!-- Bootstrap Core -->
+		<script src="/js/bootstrap.min.js"></script>
+
+		<!-- Bootstrap Dialog -->
+		<link href="/css/bootstrap-dialog.min.css" rel="stylesheet" type="text/css" />
+		<script src="/js/bootstrap-dialog.min.js"></script>
+
+		<!-- Handsontable -->
+		<link rel="stylesheet" href="/css/default/style.min.css">
+
+		<!-- Validation rules for excel import -->
+		<script type="text/javascript" language="javascript" src="/js/import/import.testcase.validation.js"></script>		
+
+		<!-- Ladda spinning button animations -->
+		<link rel="stylesheet" href="/css/sheetjs.css">
+		<link rel="stylesheet" href="/css/ladda-themeless.min.css">
+		<script src="/js/spin.min.js"></script>
+		<script src="/js/ladda.min.js"></script>		
+	</head>
+
+	<script type="text/javascript">
+		$(document).ready(function(){ 
+			var input = document.getElementsByTagName('input')[0];
+
+			input.onclick = function () {
+			    this.value = null;
+			};
+		})
+
+		$(function(){
+			// $('#browse').on('click',function(){
+			// 	$('#drop').value = null;
+			// })
+			$('#submit_data').on('click',function(){
+				var importdata = {import_data:[]};
+				var casedata = {case_data:[]};
+				var stepdata = {step_data:[]};
+
+				// Get json representing the 2 tables data
+				var cases = getCases();
+				var steps = getSteps();
+
+				appNameCheck(function ( result ) { 
+				    if( typeof this.counter == 'undefined' ) { this.counter = 1; };
+				    if( typeof this.errors == 'undefined' ) { this.errors = ""; };
+
+					if (result != 'found' && this.errors.indexOf( result ) == -1) {
+						this.errors = this.errors + result + "<br>";
+					}
+
+					if (this.counter == cases.length - 1) { 
+						this.counter = 1;
+						if (this.errors.length == 0 ) {
+							// Save
+							casedata.case_data.push(cases);
+							stepdata.step_data.push(steps);
+							importdata.import_data.push(casedata);
+							importdata.import_data.push(stepdata);
+					    	$.ajax({
+					            type: "POST",
+					            url: "/saveimportdata",
+					            data: importdata,
+					            success: function(data){
+					            	// Parse the JSON so we can get each value
+					            	var obj = jQuery.parseJSON( data );
+									var treeCr = "<div id='treeC' class='demo' style='font-size: small; visibility: hidden; max-height: 10px; position: relative;left: 10px;'><ul><li data-jstree='{\"icon\":\"glyphicon glyphicon-ok\"}'><a>Created Cases</a><ul>";
+									var treeUp = "<div id='treeU' class='demo' style='font-size: small; visibility: hidden; max-height: 10px; position: relative;left: 40px;'><ul><li data-jstree='{\"icon\":\"glyphicon glyphicon-ok\"}'><a>Updated Cases</a><ul>";					            	
+									var i, cCnt = 0, uCnt = 0;
+									for (i = 0; i < obj.length; i++) {
+									    // Count up how many cases were created and updated / add in tree nodes
+									    if (obj[i].type == "create") {
+									    	treeCr += "<li data-jstree='{\"icon\":\"glyphicon glyphicon-ok-circle\"}' onClick=\"window.location.href = 'test_case_edit/" + obj[i].id + "'\"><a href='test_case_edit/" + obj[i].id + "'>" + obj[i].name+ "</a></li>";
+									    	cCnt++; 
+										} else {
+											treeUp += "<li data-jstree='{\"icon\":\"glyphicon glyphicon-ok-circle\"}' onClick=\"window.location.href = 'test_case_edit/" + obj[i].id + "'\"><a href='test_case_edit/" + obj[i].id + "'>" + obj[i].name+ "</a></li>";
+											uCnt++; 
+										}
+									}
+									// If the tree is empty hide it other cap it off with closing tags
+									if (cCnt == 0) { treeCr = ""; } else { treeCr += "</ul></li></ul></div>"; }
+									if (uCnt == 0) { treeUp = ""; } else { treeUp += "</ul></li></ul></div>"; }
+
+									// Fix the text if there is only 1 remove the s
+									var cCase = "";
+									var uCase = "";
+									if (cCnt == 1) { cCase = "Case"; } else { cCase = "Cases";}
+									if (uCnt == 1) { uCase = "Case"; } else { uCase = "Cases"; }
+        
+        							// Show the dialog message	
+						        	BootstrapDialog.show({
+						        		type: BootstrapDialog.TYPE_INFO,
+										title: 'Import Successful!', 
+										message: 'E2E Cases imported: <b>' + obj.length + "</b><br><br><div style='position: relative;left: 30px;'><b>" +
+										cCnt +"</b> - E2E " + cCase + " created<br>" + treeCr + "<b>" +
+										uCnt + "</b> - E2E " + uCase + " updated</div>" + treeUp,
+							            buttons: [{
+							                label: 'Close',
+							                cssClass: 'btn-info',
+							                action: function(dialogItself){
+							                    dialogItself.close();
+							                }
+							            }],
+							            onshown: function(dialogRef){ 
+							            	$('#treeC').jstree(); 
+							            	$('#treeC').css('max-height', '1000px');
+							               	$('#treeC').css('visibility', 'visible');							            	
+							            	$('#treeU').jstree(); 
+							            	$('#treeU').css('max-height', '1000px');
+							               	$('#treeU').css('visibility', 'visible');
+							          	
+							            },
+										onhidden: function(dialogRef){
+											$('#submit_data').attr('disabled', false);	
+											Ladda.stopAll();								
+											window.location.reload(true);
+						        		}
+							        });
+					            },
+					            //throw the ruby exception error message --- Joseph
+					             error: function (xhr, ajaxOptions, thrownError) {
+				                	//if (xhr.responseText.indexOf("Ruby Error")==0){
+			                		var error_type=xhr.responseText.split("Ruby Error")[1];
+				            		var error_message=xhr.responseText.split("Ruby Error")[2];
+				            		var error_location=xhr.responseText.split("Ruby Error")[3];
+				            		//HTML to show the error location in the textarea
+				            		var details="<head><b>Details:</b></head><div><textarea readonly="+"readonly"+" rows="+"6"+" cols="+"60"+" style=resize:"+"none"+">"+error_location+"</textarea></div>";
+				            		BootstrapDialog.show({
+					        			type: BootstrapDialog.TYPE_DANGER,
+										title: 'Save Error',
+										//message: details, 
+										message: "<b>Error Type: </b>" + error_type + "<br><b>Error message: </b>"+error_message+"<div style='position: relative;left: 30px;'><br>" +"</div>" + details,
+						            	buttons: [{
+						                	label: 'Close',
+						                	cssClass: 'btn-danger',
+						                	action: function(dialogItself){
+						                    dialogItself.close();
+						                	}
+						            	}],
+						            	onhidden: function(dialogRef){
+						            		$('#submit_data').attr('disabled', false);
+						            		Ladda.stopAll();	
+					        			}
+						        	});
+				            	}
+					        });	     	        
+
+							// for ( var i = 0; i < cases.length - 1; i++ ) {
+							//     alert(JSON.stringify(cases[i]));
+							// }
+						} else {
+							// Don't save
+							this.errors = this.errors.substring(0, this.errors.length - 1);
+							//alert(this.errors);
+							// arr =  $.unique(this.errors.split(','));
+							// console.log(arr);
+							// data = arr.join(",");
+
+							alertify.alert('Applications in this Excel file do not exist in the E2E Library!<br><br>Missing Applications:<br>' + this.errors, function(){});
+							this.errors = "";
+							Ladda.stopAll();
+						}
+					}
+
+					this.counter++;
+				})
+			})
+
+			// $('input[id=drop]').change(function() {
+			// 	$('#drops').val($(this).val());	
+			// });
+		})
+	</script>
+
+	<style type="text/css">
+		body {
+
+		  line-height: 1.44;
+		}
+
+		html {
+	        /* Size of largest container or bigger */
+	        min-width: 1280px;
+	    }	
+
+		.form-group.focus .form-control,
+		.form-control:focus {  
+			border-color: #1abc9c;
+			outline: 0;
+			-webkit-box-shadow: none;
+			-moz-box-shadow: none;
+			box-shadow: none;
+		}
+
+	</style>
+
+	<body>
+		<script src="/js/alertify.js"></script>
+		<script src="/js/jquery.min.js"></script>
+		<script src="/js/jquery.handsontable.full.js"></script>
+
+		<link rel="stylesheet" media="screen" href="/css/jquery.handsontable.full.css">
+		<link rel="stylesheet" media="screen" href="/css/alertify.css">
+
+		<header class="navbar navbar-default navbar-static-top" style="height:58px; border-color: #e7e7e7;border-bottom: 1px solid transparent;">
+			<div class="container" style="padding-left: 0px;">
+				<img src="/img/HP-Log/HP_Blue_RGB_150_MN.png" class="img-responsive pull-left" alt="Responsive image">
+				<a href="/main#" class="navbar-brand" style="padding-top:15px;">E2E Testing Library</a>
+			<button class="navbar-toggle" data-toggle="collapse" data-target=".navHeaderCollapse">
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+				<div class="collapse navbar-collapse navHeaderCollapse">
+					<div class="btn-group pull-right" style="top: 15px; left: 15px;">
+					  <button type="button" class="btn btn-sm btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false" style="background: white; border-color: #dddddd;"><i class="glyphicon glyphicon-user" style="color: grey;"></i>
+					    <span style="padding-right: 10px; padding-left: 5px; color: grey;">john.doe@hp.com (Admin)</span><span class="caret" style="border-width: 4px 4px;"></span>
+					  </button>
+					  <ul class="dropdown-menu" role="menu" style="margin-top: 2px;">
+					    <li><a href="/dashboard_flows_proj">Admin Dashboard</a></li>
+					    <li class="divider"></li>
+					    <li><a href="#">Log Out</a></li>
+					  </ul>
+					</div>
+				</div>
+			</div>
+		</header>
+
+		<div class ="container col-xs-12 col-md-12">
+			<div class="row">
+				<div class="panel panel-default">
+					<div class="panel-body">
+						<div class='col-sm-6'>
+							<class="panel-title" style="font-size: 230%; font-weight: bold;">Import Test Case Data
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="container col-xs-12 col-md-12">
+			<div class="row">
+				<div class="custompanel custompanel-body custompanel-default" style="height: 100%;">
+			        <div id="right">
+			            <div id="header">
+							<div class="container col-md-12 col-xs-12" id="body">
+								<!-- <button class="btn btn-info" id="test">Test</button> -->
+								<label class="col-md-12 col-xs-12" style="margin-bottom: 0px;"><h6>E2E Test Case File:</h6></label>
+								
+								<div class="col-md-11 col-xs-11">
+									<div id="drop" class="col-md-8 col-xs-8">
+										<input id="drop" type="file" style="display:none">
+										<div class="input-append">
+											<input type="text" id="drops" class="form-control" type="text" style="text-align: center; background-color: white; border: none; font:18pt bold;color:#bbb" placeholder="Drop an Excel file here or click Browse." readonly>
+										</div>
+									</div>												
+								</div>
+								<a class="btn btn-md btn-primary col-md-1 col-xs-1" id="browse" style="margin-top: 2px; width: 85px;" onclick="$('input[id=drop]').click();">Browse</a>		
+					        </div>
+			            </div>
+			            <br>
+						
+						<div class="col-md-12 col-xs-12">
+							<div class="col-md-12 col-xs-12">
+								<label style="margin-bottom: 0px;"><h6>Case Overview: </h6></label>
+								<div id="overview">
+					          		<div class="col-md-12" id="hot" style="padding: 0px; margins: 0px;" class="handsontable"></div>  							
+								</div>
+							</div>
+
+							<div class="col-md-12 col-xs-12">
+					          	<label style="margin-top: 30px; margin-bottom: 0px;"><h6>Case Steps: </h6></label>
+					          	<div id="casesteps">
+					          		<div class="col-md-12 col-xs-12" id="steps" style="padding: 0px;" class="handsontable"></div> 
+					          	</div>							
+							</div>
+						</div>
+					</div>
+					<div class="container pull-right" style="margin-top: 30px;" >
+						<tr>
+							<td>
+								<button type="button" class="btn btn-primary btn-lg ladda-button" data-style="zoom-in" id ="submit_data" style="width:135px;" value="Save" onClick="this.disabled=true;" disabled><span class="glyphicon glyphicon-floppy-disk"></span> Save Data</button>
+							</td>
+	<!-- 						<td>
+								<button type="reset" class="btn btn btn-primary btn-lg" id ="reset_data" style="width:100px;"><span class="glyphicon glyphicon-repeat"></span> Reset</button>
+							</td> -->					
+							<td>
+								<a class="btn btn btn-warning btn-lg" data-dismiss="modal" style="width:110px;" href="/main"><span class="glyphicon glyphicon-ban-circle"></span> Cancel</a>
+							</td>
+						</tr>
+					</div>				
+				</div>
+			</div>
+		</div>
+		
+		<script src="/js/jstree.min.js"></script> 
+		<script src="/js/shim.js"></script>
+		<script src="/js/cpexcel.js"></script>
+		<script src="/js/xls.js"></script>
+		<script src="/js/jszip.js"></script>
+		<script src="/js/xlsx.js"></script>
+		<script src="/js/dropsheet.js"></script>
+		<script src="/js/main.js"></script>
+		<script src="/js/spin.js"></script>
+
+		<script>
+			// Bind normal buttons
+			Ladda.bind( '#submit_data');
+		</script>
+	</body>
+</html>

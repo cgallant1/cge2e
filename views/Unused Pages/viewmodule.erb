@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Bootstrap 101 Template</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
+
+	<!-- Optional theme -->
+	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-theme.min.css">
+
+	<!-- Latest compiled and minified JavaScript -->
+	<script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+
+  </head>
+  <body>
+    <h1>Workflow 列表</h1>
+    <div class="bs-docs-example">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Module Name</th>
+                  <th>Module_Des</th>
+                  <th>CreatedTime</th>
+                </tr>
+              </thead>
+              <tbody>
+              	<%@modules.each do |item|%>
+                <tr class="success">
+                  <td><%=item.id %></td>
+                  <td><%=item.module_name%></a></td>
+                  <td><%=item.module_des%></td>
+                  <td><%=item.create_at%></td>
+                </tr>
+                <% end %>
+              </tbody>
+            </table>
+    </div>
+</div></div>
+  </body>
+</html>

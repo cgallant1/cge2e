@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+	    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+	    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	    <meta name="author" content="Chris">
+	    <title>Dashboard</title>
+
+	    <!-- Custom CSS Settings -->
+	    <link href="/css/E2E_Custom.css" rel="stylesheet">    
+		<link href="/css/charts/flat-ui-custom.css" rel="stylesheet">
+		<link href="/css/demo.css" rel="stylesheet">
+		<link href="/css/bootstrap-theme.css" rel="stylesheet">
+
+		<!-- jQuery -->
+		<script src="/js/jquery-2.0.2.min.js"></script>
+		<script src="/js/jquery.js"></script>
+
+		<!-- Bootstrap Core -->
+		<link href="/css/bootstrap.min.css" rel="stylesheet">
+
+		<!-- Morris Charts CSS -->
+		<link href="/css/charts/morris.css" rel="stylesheet">
+		<link href="/css/charts/sb-admin.css" rel="stylesheet">
+
+		<!-- Custom Fonts -->
+		<link href="/css/charts/font-awesome.min.css" rel="stylesheet" type="text/css">	
+
+		<!-- Local CSS settings -->
+		<link href="/css/user-dropdown.css" rel="stylesheet">
+		<link href="/css/dashboard/dashboard.css" rel="stylesheet">
+
+		<!-- Datatables Plug-ins used to display tables on the page -->
+		<link rel="stylesheet" type="text/css" href="/css/dataTables.bootstrap.css">
+		<link rel="stylesheet" type="text/css" href="/css/dataTables.tableTools.css">
+		<script type="text/javascript" language="javascript" src="/js/new/jquery.dataTables.js"></script>
+		<script type="text/javascript" language="javascript" src="/js/new/dataTables.tableTools.js"></script>
+		<script type="text/javascript" language="javascript" src="/js/new/dataTables.bootstrap.js"></script>
+
+		<!-- Browser Detection -->
+		<script type="text/javascript" language="javascript" src="/js/detect.browser.js"></script>
+
+		<script type="text/javascript">
+
+	        ///////////////////////////////////////////////////////////////////////////////////////////		
+			// Pre-load sheet data
+	        ///////////////////////////////////////////////////////////////////////////////////////////			
+	        var sheet1 = null, sheet1Rel = null, mainData = null, chart1 = null, colors1 = null, style1 = null, chart1Rel = null, draw1 = null, drawRel = null;
+	        $.ajax({ url: "/topflows/type=projects",type: 'get',dataType: 'json',async: true, cache: false, success: function(data) {mainData = data;} });
+
+	        $.ajax({ url: "/js/excel-builder/templates/flows_projects/sheets/_rels/sheet1.xml.rels", type: 'get',dataType: 'xml',async: true, cache: false, success: function(data) {sheet1Rel = data;} });	        
+	        $.ajax({
+	            type: 'GET',
+	            url: "/js/excel-builder/templates/flows_projects/sheets/sheet1.xml?timestamp=" + new Date().getTime(),   // add the timestamp to the url to avoid caching in IE
+	            dataType: "text",
+	            cache: false,
+	            async: true,
+	            success: function (xml) {
+	                var client = currentBrowser();
+	                if (client.browser == "IE") { // IE Only!!!!
+	                  var xmlDoc = new ActiveXObject("Microsoft.XMLDOM");
+	                  xmlDoc.async="false";
+	                  xmlDoc.loadXML(xml);
+	                  xml = xmlDoc;
+	                  sheet1 = xml;
+	                } else {
+	                  sheet1 = $.parseXML(xml);
+	                }
+	                // console.log(sheet1);
+	            }
+	        }); 
+
+	        ///////////////////////////////////////////////////////////////////////////////////////////
+			// Pre-load chart data
+			///////////////////////////////////////////////////////////////////////////////////////////
+	        $.ajax({ url: "/js/excel-builder/templates/flows_projects/charts/colors1.xml", type: 'get',dataType: 'xml',async: true, cache: false, success: function(data) {colors1 = data;} });
+	        $.ajax({ url: "/js/excel-builder/templates/flows_projects/charts/style1.xml", type: 'get',dataType: 'xml',async: true, cache: false, success: function(data) {style1 = data;} });
+	        $.ajax({ url: "/js/excel-builder/templates/flows_projects/charts/_rels/chart1.xml.rels", type: 'get',dataType: 'xml',async: true, cache: false, success: function(data) {chart1Rel = data;} });
+	        $.ajax({ url: "/js/excel-builder/templates/flows_projects/drawings/drawing1.xml", type: 'get',dataType: 'xml',async: true, cache: false, success: function(data) {draw1 = data;} });
+	        $.ajax({ url: "/js/excel-builder/templates/flows_projects/drawings/_rels/drawing1.xml.rels", type: 'get',dataType: 'xml',async: true, cache: false, success: function(data) {drawRel = data;} });
+	        $.ajax({
+	          type: 'GET',
+	          url: "/js/excel-builder/templates/flows_projects/charts/chart1.xml?timestamp=" + new Date().getTime(),   // add the timestamp to the url to avoid caching in IE
+	          dataType: "text",
+	          cache: false,
+	          async: true,
+	          success: function (xml) {
+	            var client = currentBrowser();
+	            if (client.browser == "IE") {       // Only for IE
+	              var xmlDoc = new ActiveXObject("Microsoft.XMLDOM");
+	              xmlDoc.async="false";
+	              xmlDoc.loadXML(xml);
+	              xml = xmlDoc;
+	              chart1 = xml;
+	            } else {
+	              chart1 = $.parseXML(xml);
+	            }
+	             // console.log(chart1);
+	          }
+	        });
+
+	        ///////////////////////////////////////////////////////////////////////////////////////////
+	        // Pre-build Excel data
+	        ///////////////////////////////////////////////////////////////////////////////////////////
+
+			// Set the header into the table data array
+			var tableData = [];
+			var topData = [];
+
+			// Get the data for file naming
+			var fullDate = new Date();
+			var twoDigitMonth = (fullDate.getMonth() + 1) + "";if(twoDigitMonth.length==1)  twoDigitMonth="0" +twoDigitMonth;
+			var twoDigitDate = fullDate.getDate()+"";if(twoDigitDate.length==1) twoDigitDate="0" +twoDigitDate;
+			var currentDate = twoDigitDate + "-" + twoDigitMonth + "-" + fullDate.getFullYear();
+
+			var topURL = "/topflows/type=project";
+			$.getJSON(topURL, function(data){  
+
+				// Need to loop through the data to find the largest Project count
+				var largestCnt = 0;
+				for (j = 0; j < data.length; j++) {
+					if (data[j].count > largestCnt) { largestCnt = data[j].count; }
+				}
+
+				// Form the full column header list
+				temp = [ {value: 'Flow #', metadata: {style: null}},{value: 'E2E Flow', metadata: {style: null}},{value: 'Related Projects', metadata: {style: null}},{value: 'Related Cases', metadata: {style: null}}];
+				for (j = 0; j < largestCnt; j++) {
+					temp.push({value: 'PPM ID', metadata: {style: null}},{value: 'Case #', metadata: {style: null}});
+				}							
+				tableData.push(temp);	
+
+				// Sheet 1 header
+				topData.push([ {value: 'Flow #', metadata: {style: null}},{value: 'E2E Flow', metadata: {style: null}},{value: 'Related Projects', metadata: {style: null}},{value: 'Related Cases', metadata: {style: null}}]);
+
+    			// Create the excel data array
+				for (i = 0; i < data.length; i++) {
+					var projList = null;
+
+					temp = [data[i].label, data[i].device, data[i].count, data[i].caseCnt];
+					topData.push(temp);
+
+					var pItem;
+					for (j = 0; j < data[i].proj_list.length; j++) {
+						pItem = data[i].proj_list[j];
+						// console.log(item);
+						temp.push(pItem[0]);
+						temp.push(pItem[1]);
+					}							
+					tableData.push(temp);
+				}
+
+				// Get the top 10 results (11 because of the header)
+				topData = topData.slice(0,11);
+			})
+
+
+			$(function(){
+				// Hack for IE cache problem; for some reason IE caches all ajax
+				$.ajaxSetup({ cache: false });
+
+				require(['excel-builder'], function(E) { window.Excel = E; });
+
+				require([
+				    'excel-builder',
+				    'Excel/util',
+				    'Excel/Drawings',
+				    'Excel/Drawings/Chart',
+				    'Excel/Positioning'
+				], function (EB, util, Drawings, Chart, Positioning) {
+
+					$('#xlsxReport').on('click',function(){
+						$(this).attr("disabled", true);
+					    var workbook = Excel.createWorkbook();
+					    var sheet = workbook.createWorksheet({name: "Summary"});
+					    var sheet2 = workbook.createWorksheet({name: "Detailed Information"});
+					    
+					    var drawings = new Drawings();
+					    // var chart1 = new Chart();
+
+					    sheet.addDrawings(drawings);
+					    workbook.addDrawings(drawings);						    
+
+					    workbook.addWorksheet(sheet);
+					    workbook.addWorksheet(sheet2);
+
+					    // Create Excel table styles
+						var stylesheet = workbook.getStyleSheet();
+				        var header = stylesheet.createFormat({
+					        font: {
+					            bold: true,
+					            color: '00000000'
+					        },
+					        fill: {
+					            type: 'pattern',
+					            patternType: 'solid',
+					            fgColor: 'CCCCCCCC'
+					        }
+					    });		
+
+				        // Add in column styling for the 2 sheets
+						$.each(topData[0], function(key, item) {
+						   item.metadata.style = header.id;
+						});
+						$.each(tableData[0], function(key, item) {
+						   item.metadata.style = header.id;
+						});	        
+
+					    // Set table data and widths
+					    sheet.setData(topData);				    
+					    sheet2.setData(tableData);
+					    sheet.setColumns([{width: 15}, {width: 50}, {width: 30}, {width: 30} ]);
+						sheet2.setColumns([{width: 15}, {width: 50}, {width: 18}, {width: 18} ]);
+
+					    // Save the file
+					    saveAs(Excel.createFile(workbook, {type: "blob"}), "Full Report - Flows by Related Projects, " + currentDate + ".xlsx");
+					    $(this).attr("disabled", false);
+					})
+				});
+
+			})
+
+			$(window).load(function(){
+				// Get the data for file naming
+				var fullDate = new Date();
+				var twoDigitMonth = (fullDate.getMonth() + 1) + "";if(twoDigitMonth.length==1)  twoDigitMonth="0" +twoDigitMonth;
+				var twoDigitDate = fullDate.getDate()+"";if(twoDigitDate.length==1) twoDigitDate="0" +twoDigitDate;
+				var currentDate = twoDigitDate + "-" + twoDigitMonth + "-" + fullDate.getFullYear();
+
+			    // Bar Chart
+			    chart = Morris.Bar({
+			        element: 'morris-bar-chart',
+			        data: [],
+			        columnH: 'label',
+			        xkey: 'device',
+			        ykeys: ['count'],
+			        labels: ['Related Projects'],
+			        barRatio: 0.4,
+			        xLabelAngle: 35,
+			        hideHover: 'auto',
+			        resize: true
+			    });
+
+				// Datatable definition for Chart Details
+				var tStats = $('#stats').DataTable({
+					"bFilter": false,
+					"paging":   false,
+			        "ordering": false,
+			        "info":     false,	 	             
+					"order": [[ 2, "desc" ]],
+			        "columnDefs": [{
+			                "targets": [ 0 ],
+			                "visible": true,
+			                "width": "10%",
+			            },{
+			                "targets": [ 1 ],
+			                "width": "50%",
+			            },{
+			                "targets": [ 2 ],
+			                "width": "15%",
+			            },{
+			                "targets": [ 3 ],
+			                "width": "15%",
+			            }]        		
+				});
+
+				// Open the dropdown for this page
+    			$("#demo").collapse('show');		
+				
+				// Query the DB - Top 10 Flow by project
+				var topURL = "/topflows/type=project";
+				$.getJSON(topURL,function(data){
+					var table = $('#stats').DataTable();
+					data = data.slice(0,10);
+					 
+					// Add data to the Chart and Table
+					chart.setData(data);
+					// console.log(data);
+					$.each(data,function(i, item){
+						table.row.add([item.label, item.device, item.count, item.caseCnt]).draw();
+					})
+				})
+			})
+		</script>
+	</head>
+
+	<body>
+		<header class="navbar navbar-default navbar-fixed-top" style="height:58px;">
+			<div class="container" style="margin-left: 190px; padding-right: 0px;">
+				<div class="col-lg-12 col-sm-12 col-xs-12">
+					<div>
+						<img src="/img/HP-Log/HP_Blue_RGB_150_MN.png" class="img-responsive pull-left" alt="Responsive image">
+						<a href="/main#" class="navbar-brand" style="padding-top:15px; padding-right: 0px;">E2E Testing Library</a>
+					</div>
+					<!-- Dropdown Menu for user options -->
+					<div class="collapse navbar-collapse navHeaderCollapse pull-right">
+						<div class="btn-group" style="top: 15px; left:60px;">
+							<button type="button" class="btn btn-sm btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false" style="background: white; border-color: #dddddd; position: relative;"><i class="glyphicon glyphicon-user" style="color: grey;"></i>
+								<span style="padding-right: 10px; padding-left: 5px; color: grey;">john.doe@hp.com (Admin)</span><span class="caret"></span>
+							</button>
+							<ul class="dropdown-menu" role="menu" style="margin-top: 2px; width: 100%;">
+								<li><a href="/dashboard_flows_proj">Admin Dashboard</a></li>
+								<li class="divider"></li>
+								<li><a href="#">Log Out</a></li>
+							</ul>
+						</div>
+					</div>
+				</div>
+
+				<!-- Dashboard Sidebar -->
+	            <ul class="nav navbar-nav side-nav">
+	                <li class="active">
+	                    <a href="javascript:;" data-toggle="collapse" data-target="#demo"><i class="fa fa-fw fa-bar-chart-o"></i> Top 10 Flows <i class="fa fa-fw fa-caret-down"></i></a>
+	                    <ul id="demo" class="collapse">
+	                        <li class="selected"><a href="#" style="font-size: 14px;">by Related Projects</a></li>
+	                        <li><a href="/dashboard_flows_case" style="font-size: 14px;">by Related Cases</a></li>
+	                    </ul>
+	                <li>
+	                	<a href="javascript:;" data-toggle="collapse" data-target="#demo2"><i class="fa fa-fw fa-bar-chart-o"></i> Top 20 Apps <i class="fa fa-fw fa-caret-down"></i></a>
+	                    <ul id="demo2" class="collapse">
+	                        <li><a href="/dashboard_apps_proj" style="font-size: 14px;">by Related Projects</a></li>
+	                        <li><a href="/dashboard_apps_case" style="font-size: 14px;">by Related Cases</a></li>
+	                    </ul>
+	                </li>                       
+	                <li><a href=""><i class="fa fa-fw fa-edit"></i> Edit Apps</a></li>
+	                <li><a href=""><i class="fa fa-fw fa-edit"></i> Edit Flows</a></li>
+	                <li><a href=""><i class="fa fa-fw fa-edit"></i> Edit Cases</a></li>
+	            </ul>
+			</div>
+		</header>
+
+		<div id="wrapper" class="container col-md-12 col-xs-12" style="margin-top: 80px;">
+			<div class="row">
+			    <div id="page-wrapper" class="panel panel-body panel-default">
+			    	<div class="row" style="margin-top: 0px;">
+			    		<label class="control-label" style="margin-left: 30px;"><h3><strong>Dashboard - Statistics Overview:</strong></h3></label>
+			    	</div>
+			    	<!-- Main Info Headers -->
+					<div class="row">
+						<div class="col-lg-12 col-sm-12 col-xs-12">
+							<div class="col-lg-3 col-sm-3 col-xs-3">
+								<div class="panel panel-default" style="padding: 0px; margin: 0 0px 30px 0; height: 80px;">
+									<div class="panel-body">
+										<h1><span class="label label-primary col-lg-3 col-sm-3" style="top: -20px;"><span class="glyphicon glyphicon-list-alt" style="top: 3px;"></span></span></h1>
+										<span class="col-lg-8 col-sm-8" style="color: grey; font-weight: bold; top: -23px;">E2E Test Cases:</span>
+										<span class="col-lg-8 col-sm-8" style="font-weight: bold; top: -12px; font-size: 130%;"><%=@e2eCaseCount%></span>
+									</div>
+								</div>
+							</div>
+
+							<div class="col-lg-3 col-sm-3 col-xs-3">
+								<div class="panel panel-default" style="padding: 0px; margin: 0 0px 30px 0; height: 80px;">
+									<div class="panel-body">
+										<h1><span class="label label-danger col-lg-3 col-sm-3" style="top: -20px;"><span class="glyphicon glyphicon-th-list" style="top: 3px;"></span></span></h1>
+										<span class="col-lg-8 col-sm-8" style="color: grey; font-weight: bold; top: -23px;">Solo Test Cases:</span>
+										<span class="col-lg-8 col-sm-8" style="font-weight: bold; top: -12px; font-size: 130%;"><%=@soloCaseCount%></span>
+									</div>
+								</div>
+							</div>
+
+							<div class="col-lg-3 col-sm-3 col-xs-3">
+								<div class="panel panel-default" style="padding: 0px; margin: 0 0px 30px 0; height: 80px;">
+									<div class="panel-body">
+										<h1><span class="label label-success col-lg-3 col-sm-3" style="top: -20px;"><span class="glyphicon glyphicon-sort-by-attributes-alt" style="top: 3px;"></span></span></h1>
+										<span class="col-lg-8 col-sm-8" style="color: grey; font-weight: bold; top: -23px;">E2E Flows:</span>
+										<span class="col-lg-8 col-sm-8" style="font-weight: bold; top: -12px; font-size: 130%;"><%=@flowCount%></span>
+									</div>
+								</div>
+							</div>
+
+							<div class="col-lg-3 col-sm-3 col-xs-3">
+								<div class="panel panel-default" style="padding: 0px; margin: 0 0px 30px 0; height: 80px;">
+									<div class="panel-body">
+										<h1><span class="label label-warning col-lg-3 col-sm-3" style="top: -20px;"><span class="glyphicon glyphicon-folder-open" style="top: 3px;"></span></span></h1>
+										<span class="col-lg-8 col-sm-8" style="color: grey; font-weight: bold; top: -23px;">Apps:</span>
+										<span class="col-lg-8 col-sm-8" style="font-weight: bold; top: -12px; font-size: 130%;"><%=@appCount%></span>
+									</div>
+								</div>
+							</div>						
+						</div>
+					</div>
+
+					<!-- Main Chart -->
+			        <div class="container-fluid">
+		                <div class="col-lg-12 col-sm-12">
+		                    <div class="panel panel-primary" >
+		                        <div class="panel-heading">
+		                            <h3 class="panel-title"><i class="fa fa-bar-chart-o"></i> Top 10 Flows by Related Projects</h3>
+		                        </div>
+		                        <div class="panel-body">
+		                            <div id="morris-bar-chart"></div>
+
+		                        </div>
+		                    </div>
+		                </div>
+			        </div>
+					<br>
+
+					<!-- Chart Details Table -->
+					<div class="col-lg-12">
+						<div class="panel panel-default">
+							<div class="panel-heading">
+								<h3 class="panel-title"><i class="fa fa-tasks fa-fw"></i> Chart Details<a class="btn btn btn-primary btn-xs pull-right" data-dismiss="modal" style="width:140px; height: 30px; margin-top: -6px;color: white;" id="xlsxReport">Save Report to Excel</a></h3>
+								<!-- <a class="btn btn btn-warning btn-xs" data-dismiss="modal" style="width:110px;" id="test">test</a> -->
+								<!-- <a class="btn btn btn-warning btn-xs" data-dismiss="modal" style="width:110px;" id="xml">xml modification</a> -->
+							</div>
+							<div class="panel-body">
+								<table aria-describedby="stats" role="grid" class="table table-striped table-bordered no-footer" style="table-layout:fixed;" id="stats" cellpadding="0" cellspacing="0" border="0" style="margin-top: 0px;">
+									<thead>
+										<tr>
+											<th aria-label="flowNum" colspan="1" rowspan="1" aria-controls="stats" tabindex="0">Flow #</th>
+											<th aria-label="e2eFlow" colspan="1" rowspan="1" aria-controls="stats" tabindex="0">E2E Flow</th>
+											<th aria-label="relProj" colspan="1" rowspan="1" aria-controls="stats" tabindex="0">Related Projects</th>
+											<th aria-label="relCases" colspan="1" rowspan="1" aria-controls="stats" tabindex="0">Related Cases</th>	
+										</tr>
+									</thead>
+									<tbody style="font-size:80%;">
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>		
+					<!-- end chart details table -->
+			    </div>
+			    <!-- /#page-wrapper -->
+		    </div>
+		    <!-- /#row -->
+		</div>
+		<!-- /#wrapper -->
+
+	    <!-- Bootstrap Core JavaScript -->
+	    <script src="/js/bootstrap.js"></script>
+
+	    <!-- Morris Charts JavaScript -->
+	    <script src="/js/charts/raphael.min.js"></script>
+	    <script src="/js/charts/morris.js"></script>
+	    <script src="/js/charts/morris.min.js"></script>
+
+	    <!-- Excel Builder Plugin -->
+	    <script type="text/javascript" language="javascript" src="/js/excel-builder/FileSaver.js"></script>
+		<script type="text/javascript" language="javascript" src="/js/excel-builder/require.js"></script>
+		<script type="text/javascript" language="javascript" src="/js/excel-builder/excel-builder.compiled.min.js"></script>
+	</body>
+</html>

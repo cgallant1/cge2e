@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+	<head>
+	    <title>Create Module</title>
+	    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	    <link href="../public/css/bootstrap.min.css" rel="stylesheet">
+	    <link href="../public/css/E2E_Custom.css" rel="stylesheet">
+		<link href="../public/css/flat-ui.css" rel="stylesheet">
+		<link href="../public/css/demo.css" rel="stylesheet">
+		<link href="../public/css/bootstrap-theme.css" rel="stylesheet">
+		<script src="../public/js/jquery-2.0.2.min.js"></script>
+		<script src="../public/js/bootstrap.js"></script>
+		<script src="../public/js/jquery.jstree.js"></script>
+		<style type="text/css">
+			    .btn{width:100px; height:40px; margin-top:10px; cursor:pointer;}
+		</style>
+
+	</head>
+
+	<body>
+		<header class="navbar navbar-default navbar-static-top" style="height:58px;">
+			<div class="container">
+				<img src="../public/img/HP-Log/HP_Blue_RGB_150_MN.png" class="img-responsive pull-left" alt="Responsive image">
+				<a href="#" class="navbar-brand" style="padding-top:15px;">E2E Testing Tool</a>
+			<button class="navbar-toggle" data-toggle="collapse" data-target=".navHeaderCollapse">
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+				<div class="collapse navbar-collapse navHeaderCollapse">
+					<ul class="nav navbar-nav navbar-right">
+						<li><a href="#">Help</a></li>
+						<li><a href="#">Logout</a></li>
+					</ul>
+				</div>
+			</div>
+		</header>
+
+
+			<div Class="container">
+	            <div class="panel panel-default">
+				  	<h3>Create Modules</h3>
+			    </div>
+			    <div class="custompanel custompanel-body custompanel-default">
+			    	<form class="form-horizontal" role="form" action="/docreatemodule" name="myform" method="post">
+			    		<table>
+				   	 		<div class="container col-md-12">
+				   	 		  <div class="form-group">
+							    <label class="col-md-3 control-label"><h6>Module Name:</h6></label>
+							    <div class="col-md-6">
+							      <input type="text" class="form-control" name="modulename" id="modulename" placeholder="Module Name..">
+							    </div>
+							  </div>
+							</div>
+			                <div class="container col-md-12">
+				   	 		  <div class="form-group">
+							    <label class="col-md-3 control-label"><h6>Module Des:</h6></label>
+							    <div class="col-md-6">
+							      <input type="text" class="form-control" name="moduledes" id="moduledes" placeholder="Module Des..">
+							    </div>
+							  </div>
+							</div>
+							<div class="container col-md-12">
+				   	 		  <div class="form-group">
+							    <label class="col-md-3 control-label"><h6>Flow name:</h6></label>
+							    <div class="col-md-6">
+							      	<select id="flowname" name="flowid" class="form-control">
+										<%@flows.each do |flow| %>
+										<option value ="<%=flow.id%>"><%=flow.flow_name%></option>
+										<% end %>
+									</select>
+							    </div>
+							  </div>
+							</div>
+							<div class="container col-md-12">
+				   	 		  <div class="form-group">
+							    <label class="col-md-3 control-label"><h6>Module Type:</h6></label>
+							    <div class="col-md-6">
+							      	<select id="moduleype" name="moduleype" class="form-control"> 		
+										<option value ="auto">Automation</option>
+										<option value ="mannual">Manual</option>
+									</select>
+							    </div>
+							  </div>
+							</div>
+							<div class="container col-md-12">
+				   	 		  <div class="form-group">
+							    <label class="col-md-3 control-label"><h6>Create By:</h6></label>
+							    <div class="col-md-6">
+							      <input type="text" class="form-control" name="createby" id="createby" placeholder="Create By..">
+							    </div>
+							  </div>
+							</div>
+						</table>
+						<table>
+							<tr>
+							<td>
+							<input type="submit" value="Submit" class="btn btn-info" onclick=myfun_submit() />
+							</td>
+							<td>
+							<input type="submit" value="Reset" class="btn btn-info" onclick=myfun_reset() />
+							</td>
+							</tr>
+						</table>
+				    </form>
+				</div>
+			</div>
+
+		<footer class="navbar navbar-default navbar-fixed-bottom">
+			<div class="container">
+				<p class="navbar-text pull-right">Version 1.0</p>
+			</div>
+		</footer>
+
+	</body>
+
+
+</html>

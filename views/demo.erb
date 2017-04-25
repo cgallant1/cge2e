@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<head>
+	<meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="Chris">
+	<title>E2E Testing Library</title>
+
+	<!-- Custom CSS Settings -->
+	<link href="/css/bootstrap.min.css" rel="stylesheet">
+	<link href="/css/flat-ui.css" rel="stylesheet">
+	<link href="/css/demo.css" rel="stylesheet">
+	<link href="/css/bootstrap-theme.css" rel="stylesheet">
+	<link href="/css/user-dropdown.css" rel="stylesheet">
+
+	<!-- jQuery -->
+	<script src="/js/jquery-2.0.2.min.js"></script>
+	<script src="/jtreelib/jquery.cookie.js"></script>
+	<script src="/jtreelib/jquery.hotkeys.js"></script>
+	<script src="/js/jquery.jstree.js"></script>
+	<script src="/js/!script.js"></script>
+
+	<!-- Bootstrap Core -->
+	<script src="/js/bootstrap.min.js"></script>
+
+	<style type="text/css">
+		body {
+
+		  line-height: 1.44;
+		}
+
+		html {
+	        /* Size of largest container or bigger */
+	        min-width: 1370px;
+	    }
+
+		.tree {
+		    min-height:20px;
+		    padding:10px;
+		    margin-bottom:20px;
+		    background-color:#ffffff;
+		    border:1px solid #DDDDDD;
+		    -webkit-border-radius:4px;
+		    -moz-border-radius:4px;
+		    border-radius:4px;
+		    -webkit-box-shadow:inset 0 1px 1px rgba(0, 0, 0, 0.05);
+		    -moz-box-shadow:inset 0 1px 1px rgba(0, 0, 0, 0.05);
+		    box-shadow:inset 0 1px 1px rgba(0, 0, 0, 0.05)
+		}
+		.tree li {
+		    list-style-type:none;
+		    margin:0;
+		    padding:10px 5px 0 5px;
+		    position:relative
+		}
+		.tree li::before, .tree li::after {
+		    content:'';
+		    left:-20px;
+		    position:absolute;
+		    right:auto
+		}
+		.tree li::before {
+		    border-left:1px solid #999;
+		    bottom:50px;
+		    height:100%;
+		    top:0;
+		    width:1px
+		}
+		.tree li::after {
+		    border-top:1px solid #999;
+		    height:20px;
+		    top:25px;
+		    width:25px
+		}
+		.tree li span {
+		    -moz-border-radius:5px;
+		    -webkit-border-radius:5px;
+		    border:1px solid #999;
+		    border-radius:5px;
+		    display:inline-block;
+		    padding:3px 8px;
+		    text-decoration:none
+		}
+		.tree li.parent_li>span {
+		    cursor:pointer
+		}
+		.tree>ul>li::before, .tree>ul>li::after {
+		    border:0
+		}
+		.tree li:last-child::before {
+		    height:30px
+		}
+		.tree li.parent_li>span:hover, .tree li.parent_li>span:hover+ul li span {
+		    background:#eee;
+		    border:1px solid #94a0b4;
+		    color:#000
+		}
+
+		#demo1 li { min-height:30px}
+
+		a.ex1:hover, a.ex1:active {color: black;}
+
+		.nav-tabs {
+		    position: absolute;
+
+		    -webkit-transform-origin: 0 0;
+		       -moz-transform-origin: 0 0;
+		         -o-transform-origin: 0 0;
+		            transform-origin: 0 0;
+		    -webkit-transform: rotate(-90deg) translate(-252px, -41px);
+		       -moz-transform: rotate(-90deg) translate(-252px, -41px);
+		         -o-transform: rotate(-90deg) translate(-252px, -41px);
+		            transform: rotate(-90deg) translate(-252px, -41px);         /* IE10 */
+		    filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=3); /* IE8/9 */
+		    ...
+		}
+		.nav-tabs li {
+		    float: left;
+		}
+		#tab li a {
+		    display: block;
+		    padding: 0px;
+		}
+
+		#case_border { 
+		    display: block; 
+		    position: absolute; 
+		    height: 340px; 
+		}
+		#flow_border { 
+		    display: block; 
+		    position: absolute; 
+		    height: 349px; 
+		}
+
+		.bottom-left { 
+		    bottom: 3px; 
+		    left: 0px; 
+		    border-left: 1px solid #DDDDDD;
+		} 		
+
+		[class^="icon-custom-"],
+		[class*=" icon-custom-"] {
+		    background-image: url("../img/CustomIcons2.png");
+		    background-repeat: no-repeat;
+		    display: inline-block;
+		}
+
+		.icon-custom-manual { background-position: 0px 0px; width : 18px; height : 18px; }
+		.icon-custom-auto { background-position: -19px 0px; width : 18px; height : 18px; }
+
+		.more_box {
+		    width:100%;
+		}
+		.more_box div {
+		    width:100%;
+		}
+		.more_box .header {
+			border: 1px solid #DDDDDD; 
+			border-top: none; 
+			border-left:none; 
+			border-right: none;
+		    padding: 2px;
+		    cursor: pointer;
+		    font-weight: bold;
+		}
+		.more_box .content {
+		    display: none;
+		   margin-top: 15px;
+		}		
+	</style>
+
+	<script type="text/javascript">
+		var strHTML;
+
+		$(window).load(function(){
+			// Hack for IE cache problem; for some reason IE caches all ajax
+			$.ajaxSetup({ cache: false });
+
+			// Perform a search when the page loads
+			searchflow("#searchcondition", true);
+			$('#searchCases').trigger('click');
+
+			$(function () {
+				// Add a new tooltip when a tree node is open
+			    $('.tree li:has(ul)').addClass('parent_li').find(' > span').attr('title', 'Collapse this Flow');
+			    
+			    // Expand and contract tree sections
+			    $(document).on('click','.tree li.parent_li > span', function (e) {
+
+			        var children = $(this).parent('li.parent_li').find(' > ul > li');
+			        if (children.is(":visible")) {
+			            children.hide('fast');
+			            $(this).attr('title', 'Expand this Flow').find(' > i').addClass('glyphicon glyphicon-plus-sign').removeClass('glyphicon-minus-sign');
+			        } else {
+			            children.show('fast');
+			            $(this).attr('title', 'Collapse this Flow').find(' > i').addClass('glyphicon glyphicon-minus-sign').removeClass('glyphicon-plus-sign');
+			        }
+			        e.stopPropagation();
+			    });
+
+			    // EXPERIMENT
+			    $(document).on('mouseover','.tree li.parent_li > span', function (e) {
+			    	console.log('bing');
+			    });
+
+			});
+		})
+
+		function symbolchange(str){
+			// replace all of the character may cause web blocked ---- Casper
+			str=str.replace(/\//g, "Ð");
+			str=str.replace(/\?/g, "Ø");
+			str=str.replace(/\\/g, "Ò");
+			str=str.replace(/\'/g, "Á");
+			str=str.replace(/\%/g, "Ý");
+			str=str.replace(/\#/g, "Ñ");
+			str=str.replace(/\[/g, "Ê");
+			str=str.replace(/\]/g, "Ë");
+			str=str.replace(/\|/g, "Æ");
+			str=str.replace(/\&/g, "β");
+			str=str.replace(/\*/g, "Δ");
+			str=str.replace(/\./g, "Þ");
+			return str;
+		}
+
+		function getbadgetype(badgeType){
+			var badge = "";
+			if (badgeType == "Automation"){
+				badge = '<i class="icon-custom-auto" style="position: relative; top: 3px; margin-left:1px; margin-right: 0px;"></i>';
+			} else if (badgeType == "Manual") {
+				badge = '<i class="icon-custom-manual" style="position: relative; top: 3px; margin-left:1px; margin-right: 0px;"></i>';
+			} else if (badgeType == "Both") {
+				badge = '<i class="icon-custom-manual" style="position: relative; top: 3px; margin-left:1px; margin-right: 0px;"></i><i class="icon-custom-auto" style="position: relative; top: 3px; margin-left:1px; margin-right: 0px;"></i>';
+			}
+			return badge;
+		}
+
+		$(function(){
+			//Set the radio buttons based on DB values
+			var tc_id;
+			var currProduct;
+			var currAppID;
+
+			$('#noFlows').on( 'click', function(){
+				// Search field parameters
+				var ppm_id=$('#ppm_id').val();	
+				var e2e_case=$('#e2e_case').val();
+
+				var portfolio=$('#portf').val();
+				var env_box=$('#env_box').val();
+				var flow_name=$('#flow_name').val();
+				var app_name=$('#app_name').val();
+				var com_code=$('#co_code').val();
+				var key_doc=$('#key_doc').val();
+				var biz_proc=$('#biz_proc').val();
+
+				// Count the number of records that were found
+				var temp = $('#recordCount').html();
+				var arrTemp = temp.split(" - ");
+				var temp2 = arrTemp[0].replace("<b>", "");
+				var currCount = parseInt(temp2);
+
+				// Cases without flows
+				if ($("#noFlows").is(':checked') == true) {
+					$("#test_tree ul:eq(0) li:eq(0)").before('<li class="parent_li" id="orphans" style="display: block;">');
+					$("#orphans").append('<span title="Expand this Flow" style="background-color: yellow;"><i class="glyphicon glyphicon-plus-sign"></i> E2E Cases with no Flow</span>');
+					$("#orphans").append("<ul>");
+
+					// Get Orphan Cases
+					var otcURL = "/submitOTC/ppm_id=" + ppm_id + "&e2e_case=" + e2e_case;
+					$.getJSON(otcURL,function(dataOF){
+						var auto = "";
+						var badge = "";
+						$.each(dataOF,function(i, item){
+							badge = getbadgetype(item.test_case_type);
+												
+							$('#orphans ul').append('<li style="display: none;"><a href="test_case_edit/'+item.id+'" class="ex1"><span title="Click to Edit Case" '+auto+'>'+ badge +' : ' + item.test_case_name + '</span></li>');		
+						})
+
+						// Mark Empty Flows in gray remove icons
+						if(Object.keys(dataOF).length == 0){
+							// $("#t" + i).remove();
+							$('#orphans i').remove();
+							$('#orphans span').css("background-color", "lightgray");
+							$('#orphans span').attr("title","Empty: Flow has no Cases");
+						}
+						// Update the record count
+						window.setTimeout(function() {
+							$('#recordCount').html("<b>" + $("#test_tree ul:eq(0) li ul li").length + "</b> - E2E Cases found"); 
+						}, 1);						
+					})					
+				} else {
+					// Delete the Orphan cases
+					$("#orphans").remove();
+
+					// Update the record count
+					window.setTimeout(function() {
+						$('#recordCount').html("<b>" + $("#test_tree ul:eq(0) li ul li").length + "</b> - E2E Cases found");	
+					}, 1);	
+				}
+			})
+
+			$('#searchCases').on( 'click', function(){
+				// replace each field special character ---- Casper
+				var flow_name=symbolchange($('#flow_name').val());
+				var app_name=symbolchange($('#app_name').val());
+				var com_code=symbolchange($('#co_code').val());
+				var ppm_id=symbolchange($('#ppm_id').val());		
+				var portfolio=symbolchange($('#portf').val());
+				var env_box=symbolchange($('#env_box').val());				
+				var key_doc=symbolchange($('#key_doc').val());		
+				var biz_proc=symbolchange($('#biz_proc').val());		
+				var e2e_case=symbolchange($('#e2e_case').val());
+
+				var caseCount = 0;
+
+				var last_ti = 0;
+				var last_flow_des = "";
+				var id_list = "";
+
+				$("#recordCount").html("<b>0</b> - E2E Cases Found");
+				$('#expanderC').text("Expand All Flows");
+
+				var url = "/submitFlow/flow_name="+ flow_name + "&app_name=" + app_name + "&com_code=" + com_code + "&ppm_id=" + ppm_id + "&portf=" + portfolio + "&env_box=" + env_box + "&key_doc=" + key_doc + "&biz_proc=" + biz_proc + "&e2e_case=" + e2e_case;
+				var urlTC;
+
+				strHTML = "";
+				
+				// Initialize variables
+				var manualCnt = 0;
+				var autoCnt = 0;
+				var cnt = 0;
+				var emptyCnt = 0;				
+				var url = "/mastersearch/flow_name="+ flow_name + "&app_name=" + app_name + "&com_code=" + com_code + "&ppm_id=" + ppm_id + "&portf=" + portfolio + "&env_box=" + env_box + "&key_doc=" + key_doc + "&biz_proc=" + biz_proc + "&e2e_case=" + e2e_case;
+
+				$("#test_tree").html("");
+				$("#test_tree").append("<ul class='base'>");
+
+				// Cases without flows
+				if ($("#noFlows").is(':checked') == true && flow_name == "" && app_name == "" && com_code == "" && portfolio == "" && env_box == "" && key_doc  == "" && biz_proc  == "") {
+					$("#test_tree  ul.base").append('<li class="parent_li" id="orphans" style="display: none;">');
+					$("#orphans").append('<span title="Expand this Flow" style="background-color: yellow;"><i class="glyphicon glyphicon-plus-sign"></i> E2E Cases with no Flow</span>');
+					$("#orphans").append("<ul>");
+				}
+
+				$.getJSON(url,function(dataA){
+					// console.log(dataA);
+					$.each(dataA,function(i, item){
+						//console.log(item);
+						// console.log(item.flow_id + ", " + item.flow_des + ", " + item.id+ ", " +item.test_case_name+ ", " +item.test_case_type+ ", " +item.app_name);
+						if (item.test_case_name == "") {
+							// Empty Flow
+							$("#test_tree  ul.base").append('<li class="parent_li" id="t' + last_ti + '" style="display: block;">');
+							$("#t" + last_ti).append('<span title="Empty: Flow has no Cases" style="background-color: lightgray;">'+ item.flow_des +'</span>');	
+
+							// Add Manual and Automation icons to the Tree root
+							applyBadges(manualCnt, autoCnt, last_ti, "t");
+
+							// Update the tracking variables
+							last_flow_des = item.flow_des;
+							cnt++;
+							last_ti = cnt;		
+							emptyCnt++;
+							// console.log("empty: " + item.flow_des);
+						} else if (item.flow_des == last_flow_des) {
+							// Add the test cases to the sublist and detect the badge type
+
+							badge = getbadgetype(item.test_case_type);	
+		
+
+							$("#t" + (last_ti - 1) + " ul.sublists").append('<li style="display: none;"><a href="test_case_edit/'+item.id+'" class="ex1"><span title="Click to Edit Case">'+ badge +' : ' + item.test_case_name + '</span></li>');
+
+							// Keep counts to add the correct Icons
+							if (item.test_case_type == 'Automation') { autoCnt++;}
+							if (item.test_case_type == 'Manual') { manualCnt++;}
+							if (item.test_case_type == 'Both') { autoCnt++; manualCnt++;}
+						} else {
+							// Add the root for this Flow
+							$("#test_tree ul.base").append('<li class="parent_li" id="t' + last_ti + '" style="display: block;"></li>');
+							$("#t" + last_ti).append('<span title="Expand this Flow"><i class="glyphicon glyphicon-plus-sign"></i> '+ item.flow_des +'</span>');
+
+							// Add the first Case under the tree root and detect its badge
+							badge = getbadgetype(item.test_case_type);
+							$("#t" + last_ti).append("<ul class='sublists'></ul>");
+							$("#t" + last_ti + " ul.sublists").append('<li style="display: none;"><a href="test_case_edit/'+item.id+'" class="ex1"><span title="Click to Edit Case">'+ badge +' : ' + item.test_case_name + '</span></li>');	
+
+							// Add Manual and Automation icons to the Tree root
+							applyBadges(manualCnt, autoCnt, last_ti, "t");		
+
+							// Reset counts for a new root
+							if (item.test_case_type == 'Automation') { autoCnt = 1;} else { autoCnt = 0; }
+							if (item.test_case_type == 'Manual') { manualCnt = 1;} else { manualCnt = 0; }
+							if (item.test_case_type == 'Both') { autoCnt = 1; manualCnt = 1;}			
+
+							// Update the tracking variables
+							last_flow_des = item.flow_des;
+							cnt++;
+							last_ti = cnt;
+						}
+					})
+					var trueCnt = 0;
+					if (dataA.length != 0) { trueCnt = dataA.length; }
+					// console.log("trueCnt: ",trueCnt);
+					// console.log("emptyCnt: ",emptyCnt);
+					//console.log("Count: ",trueCnt - emptyCnt);
+					$('#recordCount').html("<b>" + (trueCnt - emptyCnt).toString() + "</b> - E2E Cases found");
+					applyBadges(manualCnt, autoCnt, last_ti, "t");
+
+					// Show the finished tree list
+					$("#test_tree").find(' > ul > li').each(function(){
+						$(this).css('display', 'block');
+					});
+
+					// Re-enable the button after search finishes
+					$('#searchCases').attr('disabled', false);
+
+					// Display a message if nothing found otherwise cap off the tree
+					if($('#recordCount').text() == "0 - E2E Cases found"){
+						$("#test_tree ul.base").append("<br><span><b>No Cases Found...</b></span>");
+					}						
+				
+					// Get Orphan Cases
+					var otcURL = "/submitOTC/ppm_id=" + ppm_id + "&e2e_case=" + e2e_case;
+					if ($("#noFlows").is(':checked') == true && flow_name == "" && app_name == "" && com_code == "" && portfolio == "" && env_box == "" && biz_proc == "") {
+						$.getJSON(otcURL,function(dataOF){
+							var auto = "";
+							var badge = "";
+							$.each(dataOF,function(i, item){
+								badge = getbadgetype(item.test_case_type);				
+								$('#orphans ul').append('<li style="display: none;"><a href="test_case_edit/'+item.id+'" class="ex1"><span title="Click to Edit Case" '+auto+'>'+ badge +' : ' + item.test_case_name + '</span></li>');							
+							})
+							// Count the number of records that were found
+							var temp = $('#recordCount').html();
+							var arrTemp = temp.split(" - ");
+							var temp2 = arrTemp[0].replace("<b>", "");
+							var currCount = parseInt(temp2);
+
+							// console.log("currCount: ",currCount);
+
+							// Count the number of records that were found
+							currCount = currCount + Object.keys(dataOF).length
+							$('#recordCount').html("<b>" + currCount.toString() + "</b> - E2E Cases found");	
+
+							// Display a message if nothing found otherwise cap off the tree
+							if($('#recordCount').text() == "0 - E2E Cases found"){
+								$("#test_tree ul.base").append("<br><span><b>No Cases Found...</b></span>");
+							}							
+						})				
+					}	
+				})		
+			})	
+		}) 
+
+		function applyBadges(manualCnt, autoCnt, last_ti, element){
+			// Apply Manual and Automation badges to tree nodes
+			if (manualCnt > 0 || autoCnt > 0) {$('#' + element + (last_ti - 1) + " > span > i").append(" "); }
+			if (manualCnt > 0 && autoCnt > 0) { $('#' + element + (last_ti - 1) + " > span > i").append("<i class='icon-custom-manual' style='position: relative; top: 1px; margin-left:1px; margin-right: 0px;'>"); }
+			if (manualCnt > 0 && autoCnt == 0) { $('#' + element  + (last_ti - 1) + " > span > i").append("<i class='icon-custom-manual' style='position: relative; top: 1px; margin-left:1px; margin-right: 10px;'>"); }
+			if (autoCnt > 0) { $('#' + element + (last_ti - 1) + " > span > i").append("<i class='icon-custom-auto' style='position: relative; top: 1px; margin-left:1px; margin-right: 10px;'>"); }				
+		}
+
+		function searchflow(obj, cloneTab){
+			var last_ti = 0;
+			var last_flow_des = "";
+			var id_list = "";
+			app_name = obj.name;
+			if (app_name == null) { app_name = ""; }
+			// Need to replace special characters here also
+			app_name = symbolchange(app_name);
+
+			var flow_name= ""; //$('#flow_name').val();
+			var com_code= ""; //$('#co_code').val();
+			var ppm_id= ""; //$('#ppm_id').val();
+			var portfolio= ""; //$('#portf').val();
+			var env_box= ""; //$('#env_box').val();
+
+			var key_doc= ""; //$('#key_doc').val();
+			var biz_proc= ""; //$('#biz_proc').val();
+			var e2e_case= ""; //$('#e2e_case').val();
+			// alert(obj.name)
+			//alert(obj.href)
+			$('#expanderF').text("Expand All Flows");
+			$("#flowCount").html("<b>0</b> - E2E Cases Found");
+
+			// Mark the selection & set the value in the flow table
+		    if ($(obj).hasClass("active") == false) {
+		    	$(obj).addClass("active").siblings().removeClass("active");
+		    } else {
+		    	// De-select - show all
+		    	$(obj).removeClass("active");
+		    	app_name = "";
+		    }
+			// Initialize variables
+			var manualCnt = 0;
+			var autoCnt = 0;
+			var cnt = 0;
+			var emptyCnt = 0;				
+			var url = "/mastersearch/flow_name="+ flow_name + "&app_name=" + app_name + "&com_code=" + com_code + "&ppm_id=" + ppm_id + "&portf=" + portfolio + "&env_box=" + env_box + "&key_doc=" + key_doc + "&biz_proc=" + biz_proc + "&e2e_case=" + e2e_case;
+
+			$("#app_search_tree").html("");
+			$("#app_search_tree").append("<ul class='base'>");
+
+			$.getJSON(url,function(dataA){
+				// $("#test_tree").html("");
+				// $("#test_tree").append("<ul>");
+				//console.log(dataA);
+				$.each(dataA,function(i, item){
+					//var obj = jQuery.parseJSON(item);
+					//console.log(item);
+					// console.log(item.flow_id + ", " + item.flow_des + ", " + item.id+ ", " +item.test_case_name+ ", " +item.test_case_type+ ", " +item.app_name);
+					if (item.test_case_name == "") {
+						// Empty Flow
+						$("#app_search_tree ul.base").append('<li class="parent_li" id="z' + last_ti + '" style="display: block;">');
+						$("#z" + last_ti).append('<span title="Empty: Flow has no Cases" style="background-color: lightgray;">'+ item.flow_des +'</span>');	
+
+						// Add Manual and Automation icons to the Tree root
+						applyBadges(manualCnt, autoCnt, last_ti, "z");
+
+						// Update the tracking variables
+						last_flow_des = item.flow_des;
+						cnt++;
+						last_ti = cnt;		
+						emptyCnt++;
+					} else if (item.flow_des == last_flow_des) {
+						// Add the test cases to the sublist and detect the badge type
+						badge = getbadgetype(item.test_case_type);
+						$("#z" + (last_ti - 1) + " ul.sublists").append('<li style="display: none;"><a href="test_case_edit/'+item.id+'" class="ex1"><span title="Click to Edit Case">'+ badge +' : ' + item.test_case_name + '</span></li>');
+
+						// Keep counts to add the correct Icons
+						if (item.test_case_type == 'Automation') { autoCnt++;}
+						if (item.test_case_type == 'Manual') { manualCnt++;}
+						if (item.test_case_type == 'Both') { autoCnt++; manualCnt++;}
+					} else {
+						// Add the root for this Flow
+						$("#app_search_tree ul.base").append('<li class="parent_li" id="z' + last_ti + '" style="display: block;"></li>');
+						$("#z" + last_ti).append('<span title="Expand this Flow"><i class="glyphicon glyphicon-plus-sign"></i> '+ item.flow_des +'</span>');
+
+						// Add the first Case under the tree root and detect its badge
+						badge = getbadgetype(item.test_case_type);
+						$("#z" + last_ti).append("<ul class='sublists'></ul>");
+						$("#z" + last_ti + " ul.sublists").append('<li style="display: none;"><a href="test_case_edit/'+item.id+'" class="ex1"><span title="Click to Edit Case">'+ badge +' : ' + item.test_case_name + '</span></li>');	
+
+						// Add Manual and Automation icons to the Tree root
+						applyBadges(manualCnt, autoCnt, last_ti, "z");		
+
+						// Reset counts for a new root
+						if (item.test_case_type == 'Automation') { autoCnt = 1;} else { autoCnt = 0; }
+						if (item.test_case_type == 'Manual') { manualCnt = 1;} else { manualCnt = 0; }
+						if (item.test_case_type == 'Both') { autoCnt = 1; manualCnt = 1;}			
+
+						// Update the tracking variables
+						last_flow_des = item.flow_des;
+						cnt++;
+						last_ti = cnt;
+					}
+				})
+				var trueCnt = 0;
+				if (dataA.length != 0) { trueCnt = dataA.length; }
+				//console.log("Count: ",trueCnt - emptyCnt);
+				$('#flowCount').html("<b>" + (trueCnt - emptyCnt).toString() + "</b> - E2E Cases found");
+				applyBadges(manualCnt, autoCnt, last_ti, "z");
+
+				// Show the finished tree list
+				$("#app_search_tree").find(' > ul > li').each(function(){
+					$(this).css('display', 'block');
+				});
+
+				if (cloneTab == true) { 
+					// $('#recordCount').html($('#flowCount').html()); 
+					// $('#test_tree').html($('#app_search_tree').html());
+
+					// Hot-fix for user pressing back and page containing search parameters
+					if ( $('#searchbox').val() != "") { 
+						searchApp('searchbox');
+					}
+								
+					if ( $('#flow_name').val() != "" || $('#app_name').val() != "" || $('#co_code').val() != "" || $('#ppm_id').val() != ""|| $('#portf').val() != "" || $('#env_box').val() != ""|| $('#key_doc').val() != "" || $('#biz_proc').val() != ""|| $('#e2e_case').val() != "" || $("#noFlows").is(':checked') == true) {
+						if ($('#ppm_id').val() != ""|| $('#portf').val() != "" || $('#env_box').val() != ""|| $('#key_doc').val() != "" || $('#biz_proc').val() != ""|| $('#e2e_case').val() != "" || $("#noFlows").is(':checked') == true) { $('#more_box').trigger('click'); }
+						$('#caseTab').trigger('click');
+						//$('#searchCases').trigger('click');
+					}
+				}			
+			})
+		}
+
+		function expandAll(objExp, objTree){
+			var children;
+			var temp;
+
+			// Change the text of the control to reflect its function
+			if ($(objExp).text() == "Contract All Flows") {
+				$(objExp).text("Expand All Flows");
+			}else{
+				$(objExp).text("Contract All Flows");
+			}
+			
+			// Expand trees or collapse them
+			$(objTree).find(' > ul > li').each(function(){
+
+				children = $(this).find(' > ul > li');
+				if (children.is(":visible") && $(objExp).text() == "Expand All Flows") {
+					children.hide('fast');
+
+					temp = $(this).find(' > span');
+					$(temp).attr('title', 'Expand this Flow').find(' > i').addClass('glyphicon glyphicon-plus-sign').removeClass('glyphicon-minus-sign');
+				}else if ($(objExp).text() == "Contract All Flows") {
+					children.show('fast');
+
+					temp = $(this).find(' > span');
+					$(temp).attr('title', 'Collapse this Flow').find(' > i').addClass('glyphicon glyphicon-minus-sign').removeClass('glyphicon-plus-sign');
+				}
+			})	
+		}
+
+		function searchApp(x){
+			var value=document.getElementById(x).value
+
+			// Replace special characters
+			value = value.replace(/\//g, "¶");
+			value = value.replace(/\./g, "Ð");
+
+			// Decide how to search the app list depending on the value in the field
+			if (value==""){
+				url = "/viewfullapplist"
+			}else
+			{
+				url = "/submitjson/"+value
+			}
+
+			$.getJSON(url,function(data){
+				$("#info").html("");
+				if (data.length == 0) {
+					// Show the nothing found message
+					$('#app_warning').css('visibility', 'visible');
+				} else {
+					$('#app_warning').css('visibility', 'hidden');
+				}
+
+				$.each(data,function(i, item){
+					$("#info").append('<a href="#" name="'+item.app_name+ '" title="'+ item.project_id+' - '+item.app_name +
+						'" class="list-group-item" onclick="searchflow(this, false)">'+item.project_id+' - '+item.app_name+'</a>');
+				})
+			})
+
+			// If the the search condition is empty we need to perform the App Search again
+			if (value==""){ searchflow("#searchcondition", false); }
+		}
+
+		$(function(){
+			$(".header").click(function () {
+
+			    $header = $(this);
+			    //getting the next element
+			    $content = $header.next();
+			    //open up the content needed - toggle the slide- if visible, slide up, if not slidedown.
+			    $content.slideToggle(500, function () {
+			        //execute this after slideToggle is done
+			        //change text of header based on visibility of content div
+			        $header.text(function () {
+			            //change text based on condition
+			            return $content.is(":visible") ? "▼ Show Less Fields" : "► Show More Fields";
+			        });
+			    });
+			});		
+		});
+	</script>
+</head>
+
+<body>
+	<div page="E2E_Detail_Page" id="E2E_Detail_Page">
+		<header class="navbar navbar-default navbar-static-top" style="height:58px; border-color: #e7e7e7;border-bottom: 1px solid transparent;">
+			<div class="container" style="padding-left: 0px;">
+				<img src="/img/HP-Log/HP_Blue_RGB_150_MN.png" class="img-responsive pull-left" alt="Responsive image">
+				<a href="/main#" class="navbar-brand" style="padding-top:15px;">E2E Testing Library</a>
+			<button class="navbar-toggle" data-toggle="collapse" data-target=".navHeaderCollapse">
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+				<div class="collapse navbar-collapse navHeaderCollapse">
+					<div class="btn-group pull-right" style="top: 15px; left: 15px;">
+					  <button type="button" class="btn btn-sm btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false" style="background: white; border-color: #dddddd;"><i class="glyphicon glyphicon-user" style="color: grey;"></i>
+					    <span style="padding-right: 10px; padding-left: 5px; color: grey;">john.doe@hp.com (Admin)</span><span class="caret" style="border-width: 4px 4px;"></span>
+					  </button>
+					  <ul class="dropdown-menu" role="menu" style="margin-top: 2px;">
+					    <li><a href="/dashboard_flows_proj">Admin Dashboard</a></li>
+					    <li class="divider"></li>
+					    <li><a href="#">Log Out</a></li>
+					  </ul>
+					</div>
+				</div>
+			</div>
+		</header>
+	</div>
+
+	<div class ="container col-xs-12 col-md-12">
+		<div class="row">
+			<div class="panel panel-default">
+				<div class="panel-body">
+					<a class="btn btn-info" data-dismiss = "modal" href="/createapp">New APP</a>
+					<a class="btn btn-info" data-dismiss = "modal" href="/createflow">New Flow</a>
+					<a class="btn btn-info" data-dismiss = "modal" href="/createtestcase">New Test Case</a>
+					<a class="btn btn-info" data-dismiss = "modal" href="/importdata">Import Test Case Data</a>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class ="container col-xs-12 col-md-12">
+		<div class="row">
+		<!-- <div class="panel panel-default" style="border-top: none;"> -->
+			<div class="bs-example bs-example-tabs">
+				<ul id="myTab" class="nav nav-tabs" role="tablist">
+					<li><a href="#cases" role="tab" id="caseTab" data-toggle="tab">E2E Case Search</a></li>
+					<li class="active"><a href="#flows" role="tab" data-toggle="tab">App Search</a></li>
+					
+				</ul>
+				<div id="myTabContent" class="tab-content">
+					<div class="tab-pane fade in active" id="flows" style="height: 100%; border: 1px solid #DDDDDD; border-radius: 0 0 5px 5px; border-left: none;">
+						<div id="flow_border" class="corner bottom-left"></div> 
+						<br>
+						<div class="container">
+							<div class="col-xs-3 col-md-3 sidebar-offcanvas" id="sidebar" role="navigation" style="height: 572px;">
+								<form id="submitForm" name="myform" method="post" style="margin-top: 5px;">
+									<div class="form-group">
+										<input type="text" name="searchcondition" class="form-control search-field" value placeholder="Search by Application..." id="searchbox" oninput="searchApp(this.id)"/>
+									</div>
+								</form>
+								<div class="list-group" id ="info" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+									<%@apps.each do |items|%>
+										<a href="#" class="list-group-item" name="<%=items.app_name%>" title="<%=items.project_id%> - <%=items.app_name%>" onclick="searchflow(this, false)"><%=items.project_id%> - <%=items.app_name%></a>
+									<%end%>
+								</div>
+								<h7><span class='label label-warning' id='app_warning' style='visibility: hidden;'>No Apps were found for this search term...</span></h7>
+							</div><!--/span-->
+
+							<div class="col-xs-9 col-md-9" style="width: 75%; margins: 0%;">
+								<h5>E2E Workflows :</h5>
+								<a id="expanderF" style="cursor:pointer; margins: 0%;" onclick=expandAll("#expanderF","#app_search_tree")><font color="blue">Expand All Flows</font></a>
+								<div class="tree col-md-12" id="app_search_tree" style="height: 485px; overflow-y:auto; margin-bottom: 0%;">
+									<ul>
+
+									</ul>
+								</div>		
+								<span id="flowCount" style="position: absolute; right: 20px;"><b>0</b> - cases found</span>
+							</div>
+							<!-- <p style="margin-bottom: 0px;">M - Manual Workflow; A - Automation Workflow</p> -->
+																		
+							<label style="position: absolute; right: 35px; margin-top: 40px;"><h8><b>Note:</b> <i class="icon-custom-manual"></i> - Manual <i class="icon-custom-auto"></i> - Automation</h8></label>	
+						</div>
+					</div>
+					<div class="tab-pane fade" id="cases" style="height: 100%; border: 1px solid #DDDDDD; border-radius: 0 0 5px 5px; border-left: none;">
+						<div id="case_border" class="corner bottom-left"></div> 
+						<br>
+						<div class="container">
+							<div class="col-sm-3 blog-sidebar" style="border: 1px solid #DDDDDD; width: 295px; height: 552px; border-radius: 5px; display:block; margin-right: 0px; margin-left: 3px;">
+								<br>
+								<div class="input-group" style="width: 100%; margin-bottom: 20px;">
+									<button type="button" id="searchCases" class="col-xs-12 col-md-12 btn btn-sm btn-primary" style="text-align: center; cursor:pointer;" onClick="this.disabled=true;">Search Cases</button>
+								</div>
+
+								<div class="input-group" style="margin-bottom: 10px;">
+								  <span class="input-group-addon"><i class="glyphicon glyphicon-cog"></i></span>
+								  <input type="text" class="form-control" name="flow_name" id="flow_name" placeholder="Enter Flow Name...">
+								</div>
+
+								<div class="input-group" style="margin-bottom: 10px;">
+								  <span class="input-group-addon" ><i class="glyphicon glyphicon-cog"></i></span>
+								  <input type="text" class="form-control" name="app_name" id="app_name" placeholder="Enter Application Name...">
+								</div>
+
+								<div class="input-group" style="margin-bottom: 20px;">
+								  <span class="input-group-addon" ><i class="glyphicon glyphicon-cog"></i></span>
+								  <input type="text" class="form-control" name="co_code" id="co_code" placeholder="Enter Company Code...">
+								</div>
+
+								<div class="more_box">
+								    <div class="header" id="more_box"><span>► Show More Fields</span>
+									<br>
+
+								    </div>
+								    <div class="content">
+										<div class="input-group" style="margin-bottom: 10px;">
+										  <span class="input-group-addon" ><i class="glyphicon glyphicon-cog"></i></span>
+										  <input type="text" class="form-control" name="ppm_id" id="ppm_id" placeholder="Enter a PPM ID...">
+										</div>
+
+										<div class="input-group" style="margin-bottom: 10px;">
+										  <span class="input-group-addon" ><i class="glyphicon glyphicon-cog"></i></span>
+										  <input type="text" class="form-control" name="portf" id="portf" placeholder="Enter a Portfolio...">
+										</div>
+
+										<div class="input-group" style="margin-bottom: 10px;">
+										  <span class="input-group-addon" ><i class="glyphicon glyphicon-cog"></i></span>
+										  <input type="text" class="form-control" name="env_box" id="env_box" placeholder="Enter a Environment Box...">
+										</div>	
+
+										<div class="input-group" style="margin-bottom: 10px;">
+										  <span class="input-group-addon" ><i class="glyphicon glyphicon-cog"></i></span>
+										  <input type="text" class="form-control" name="key_doc" id="key_doc" placeholder="Enter Key Document Type...">
+										</div>
+
+										<div class="input-group" style="margin-bottom: 10px;">
+										  <span class="input-group-addon" ><i class="glyphicon glyphicon-cog"></i></span>
+										  <input type="text" class="form-control" name="biz_proc" id="biz_proc" placeholder="Enter Data Input / T-Code...">
+										</div>	
+
+										<div class="input-group" style="margin-bottom: 10px;">
+										  <span class="input-group-addon" ><i class="glyphicon glyphicon-cog"></i></span>
+										  <input type="text" class="form-control" name="e2e_case" id="e2e_case" placeholder="Enter E2E Case Name...">
+										</div>	
+
+										<input type='checkbox' id='noFlows'> Show E2E Cases without Flows
+								    </div>
+								</div>
+							</div>
+
+							<!-- E2E Case Search Results Area -->
+							<div class="col-sm-9 blog-main" style="width: 73.5%; margins: 0%; margin-left: 15px;">
+								<h5>Search Results:</h5>
+								<a id="expanderC" style="cursor:pointer; margins: 0%;" onclick=expandAll("#expanderC","#test_tree")><font color="blue">Expand All Flows</font></a>
+								<div class="tree col-md-12" id="test_tree" style="height: 485px; width: 102%; overflow-y:auto; margin-bottom: 0%;">
+									<ul></ul>
+								</div>								
+								<span id="recordCount" style="position: absolute; right: 0px;">0 - cases found</span>
+							</div>									
+							<label style="position: absolute; right: 35px; margin-top: 40px;"><h8><b>Note:</b> <i class="icon-custom-manual"></i> - Manual <i class="icon-custom-auto"></i> - Automation</h8></label>	
+						</div>
+						<br>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- </div> -->
+	</div>
+
+<!-- 	<footer class="navbar navbar-default navbar-fixed-bottom">
+				<div class="container">
+					<p class="navbar-text pull-right">Version 1.0</p>
+				</div>
+	</footer> -->
+
+</body>
+
+</html>

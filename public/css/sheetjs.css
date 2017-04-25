@@ -1,0 +1,50 @@
+/* sheetjs.css (C) 2014 SheetJS -- http://sheetjs.com */
+/* vim: set ts=2: */
+#drop{
+  border:2px dashed #bbb;
+  -moz-border-radius:5px;
+  -webkit-border-radius:5px;
+  border-radius:5px;
+  height: 45px;
+  text-align:center;
+  width:100%;
+  font:18pt bold;color:#bbb
+}
+
+#overview{
+  border:2px solid #ddd;
+  -moz-border-radius:5px;
+  -webkit-border-radius:5px;
+  border-radius:5px;
+  width:100%;
+  height:315px;
+}
+
+#casesteps{
+  border:2px solid #ddd;
+  -moz-border-radius:5px;
+  -webkit-border-radius:5px;
+  border-radius:5px;
+  width:100%;
+  height:315px;
+}
+
+#left {
+
+}
+#right {
+}
+
+#logo {
+  padding:25px;
+}
+#header {
+  height:30px;
+  margin-bottom: 60px;
+}
+
+.winpt { width:98%; }
+.success { color: #468847; }
+.error { color: #b94a48; }
+.info { color: #3a87ad; }
+pre { white-space: pre-wrap; }

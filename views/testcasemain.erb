@@ -1,0 +1,399 @@
+<!doctype html>
+<html>
+	<head>
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>DataTables Bootstrap 3 example</title>
+		<link href="/css/E2E_Custom.css" rel="stylesheet">
+		<link href="/css/bootstrap.min.css" rel="stylesheet">
+		<link href="/css/flat-ui.css" rel="stylesheet">		
+		<link href="/css/demo.css" rel="stylesheet">
+		<link href="/css/bootstrap-theme.css" rel="stylesheet">
+		<script src="/js/jquery-2.0.2.min.js"></script>
+		<script src="/js/bootstrap.min.js"></script>
+
+	  	<link rel="stylesheet" type="text/css" href="/css/bootstrap-combined.min.css">
+		<style type="text/css">
+			/*.btn{width:100px; height:40px; margin-top:10px; cursor:pointer;}*/
+			input[type="radio"]{width: 30px; padding: 15px; margin: 13px 0};}
+		</style>
+	</head>
+
+	<script type="text/javascript">	
+		var strHTML;
+
+		$(function(){
+			//Set the radio buttons based on DB values
+			var tc_id;
+			var currProduct;
+			var currAppID;
+
+    		$('#search').on( 'click', function(){
+				var flow_name=$('#id').val();
+				var app_name=$('#app_name').val();
+				var com_code=$('#co_code').val();
+
+				var url = "/submitFlow/flow_name="+ flow_name + "&app_name=" + app_name + "&com_code=" + com_code;
+				var urlTC;
+
+				strHTML = "";
+
+				// Flow name search
+				$.getJSON(url,function(dataF){
+					$("#test_tree").html("");
+					$("#test_tree").append("<ul>");
+					$.each(dataF,function(i, item){
+						urlTC = "/submitTC/flow_id=" + item.id + "&com_code=" + com_code;
+						$("#test_tree  ul").append('<li class="parent_li" id="t' + i + '">');
+						$("#t" + i).append('<span title="Collapse this branch"><i class="icon-plus-sign"></i> '+ item.flow_name +'</span>');
+
+						getTestCase(urlTC,i);
+						
+						// strHTML += '</li></ul>';
+						// $.getJSON(urlTC,function(dataTC){
+						// 	$.each(dataTC,function(j, itemTC){
+						// 		strHTML += '<li style="display: none;"><span><i class="icon-time"></i> ' + itemTC.test_case_name + '</span>';
+						// 	})
+						// 	strHTML += '</li></ul>';
+						// 	// alert(strHTML);
+						// 	// $("#test_tree").append(strHTML);
+						// })
+					})
+					$("#test_tree").append('</li>');
+					//alert(strHTML);
+					//$("#test_tree").append(strHTML);
+				})
+    		})	
+		}) 
+
+		function getTestCase(urlTC, i){
+			$.getJSON(urlTC,function(dataTC){
+				var auto = "";
+				var badge = "";
+				$('#t' + i).append("<ul>");
+				$.each(dataTC,function(j, itemTC){
+					if (itemTC.test_case_type == "Automation"){
+						//auto = 'class="badge badge-info"';
+						auto = '';
+						badge = 'glyphicon glyphicon-font';
+					}else{
+						auto = '';
+						badge = 'glyphicon glyphicon-user';
+					}
+
+					$('#t' + i + ' ul').append('<li style="display: none;"><span '+auto+'><i class="'+badge+'"></i> : ' + itemTC.test_case_name + '</span><a href="test_case_edit/'+itemTC.id+'"> Edit Case</a></li>');
+				})
+				//$('#t' + i).append("</ul>");
+				//strHTML += '</li></ul>';
+				//alert(strHTML);
+			})
+		}
+
+	</script>
+  
+  <style type="text/css">
+		.tree {
+		    min-height:20px;
+		    padding:10px;
+		    margin-bottom:20px;
+		    background-color:#fbfbfb;
+		    border:1px solid #999;
+		    -webkit-border-radius:4px;
+		    -moz-border-radius:4px;
+		    border-radius:4px;
+		    -webkit-box-shadow:inset 0 1px 1px rgba(0, 0, 0, 0.05);
+		    -moz-box-shadow:inset 0 1px 1px rgba(0, 0, 0, 0.05);
+		    box-shadow:inset 0 1px 1px rgba(0, 0, 0, 0.05)
+		}
+		.tree li {
+		    list-style-type:none;
+		    margin:0;
+		    padding:10px 5px 0 5px;
+		    position:relative
+		}
+		.tree li::before, .tree li::after {
+		    content:'';
+		    left:-20px;
+		    position:absolute;
+		    right:auto
+		}
+		.tree li::before {
+		    border-left:1px solid #999;
+		    bottom:50px;
+		    height:100%;
+		    top:0;
+		    width:1px
+		}
+		.tree li::after {
+		    border-top:1px solid #999;
+		    height:20px;
+		    top:25px;
+		    width:25px
+		}
+		.tree li span {
+		    -moz-border-radius:5px;
+		    -webkit-border-radius:5px;
+		    border:1px solid #999;
+		    border-radius:5px;
+		    display:inline-block;
+		    padding:3px 8px;
+		    text-decoration:none
+		}
+		.tree li.parent_li>span {
+		    cursor:pointer
+		}
+		.tree>ul>li::before, .tree>ul>li::after {
+		    border:0
+		}
+		.tree li:last-child::before {
+		    height:30px
+		}
+		.tree li.parent_li>span:hover, .tree li.parent_li>span:hover+ul li span {
+		    background:#eee;
+		    border:1px solid #94a0b4;
+		    color:#000
+		}
+  </style>
+  
+
+
+<script type="text/javascript">//<![CDATA[ 
+
+	$(window).load(function(){
+		$('#search').trigger('click');
+
+		$(function () {
+			$('#expander').on( 'click', function(){
+				var children;
+				var temp;
+
+				// Change the text of the control to reflect its function
+				if ($('#expander').text() == "Contract All") {
+					$('#expander').text("Expand All");
+				}else{
+					$('#expander').text("Contract All");
+				}
+				
+				// Expand trees or collapse them
+				$('#test_tree').find(' > ul > li').each(function(){
+
+					children = $(this).find(' > ul > li');
+					if (children.is(":visible") && $('#expander').text() == "Expand All") {
+						children.hide('fast');
+
+						temp = $(this).find(' > span');
+						$(temp).attr('title', 'Expand this branch').find(' > i').addClass('icon-plus-sign').removeClass('icon-minus-sign');
+					}else if ($('#expander').text() == "Contract All") {
+						children.show('fast');
+
+						temp = $(this).find(' > span');
+						$(temp).attr('title', 'Collapse this branch').find(' > i').addClass('icon-minus-sign').removeClass('icon-plus-sign');
+					}
+				})	
+			})
+
+		    $('.tree li:has(ul)').addClass('parent_li').find(' > span').attr('title', 'Collapse this branch');
+		    $(document).on('click','.tree li.parent_li > span', function (e) {
+		        var children = $(this).parent('li.parent_li').find(' > ul > li');
+		        if (children.is(":visible")) {
+		            children.hide('fast');
+		            $(this).attr('title', 'Expand this branch').find(' > i').addClass('icon-plus-sign').removeClass('icon-minus-sign');
+		        } else {
+		            children.show('fast');
+		            $(this).attr('title', 'Collapse this branch').find(' > i').addClass('icon-minus-sign').removeClass('icon-plus-sign');
+		        }
+		        e.stopPropagation();
+		    });
+		});
+	})//]]>  
+
+</script>
+
+<body>
+	<header class="navbar navbar-default navbar-static-top" style="height:58px;">
+		<div class="container">
+			<img src="/img/HP-Log/HP_Blue_RGB_150_MN.png" class="img-responsive pull-left" alt="Responsive image">
+			<a class="navbar-brand" style="padding-top:15px; cursor:pointer;" onclick=confirmCancel()>E2E Testing Tool</a>
+			<button class="navbar-toggle" data-toggle="collapse" data-target=".navHeaderCollapse">
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+			<div class="collapse navbar-collapse navHeaderCollapse">
+				<ul class="nav navbar-nav navbar-right">
+					<li><a href="#">Help</a></li>
+					<li><a href="#">Logout</a></li>
+				</ul>
+			</div>
+		</div>
+	</header>
+	<br>
+	<div class="container">
+		<div class="panel panel-default">
+			<div class="panel-body" style="height: 680px;">
+<!-- 			<div class="tree well">
+				<ul>
+				    <li class="parent_li" id="tree1">
+				        <span title="Expand this branch"><i class="icon-folder-close icon-plus-sign"></i> Parent</span> <a href="">Goes somewhere</a>
+				        <ul>
+				            <li class="parent_li" style="display: none;">
+				            	<span title="Collapse this branch"><i class="icon-minus-sign"></i> Child</span> <a href="">Goes somewhere</a>
+				                <ul>
+				                    <li>
+				                        <span><i class="icon-leaf"></i> Grand Child</span> <a href="">Goes somewhere</a>
+				                    </li>
+				                </ul>
+				            </li>
+				            <li class="parent_li" style="display: none;">
+				            	<span title="Collapse this branch"><i class="icon-minus-sign"></i> Child</span> <a href="">Goes somewhere</a>
+				                <ul>
+				                    <li>
+				                        <span><i class="icon-leaf"></i> Grand Child</span> <a href="">Goes somewhere</a>
+				                    </li>
+				                    <li class="parent_li">
+				                    	<span title="Collapse this branch"><i class="icon-minus-sign"></i> Grand Child</span> <a href="">Goes somewhere</a>
+				                        <ul>
+				                            <li class="parent_li">
+				                                <span title="Collapse this branch"><i class="icon-minus-sign"></i> Great Grand Child</span> <a href="">Goes somewhere</a>
+					                            <ul>
+					                                <li>
+						                                <span><i class="icon-leaf"></i> Great great Grand Child</span> <a href="">Goes somewhere</a>
+					                                </li>
+					                                <li>
+						                                <span><i class="icon-leaf"></i> Great great Grand Child</span> <a href="">Goes somewhere</a>
+					                                </li>
+					                             </ul>
+				                            </li>
+				                            <li>
+				                                <span><i class="icon-leaf"></i> Great Grand Child</span> <a href="">Goes somewhere</a>
+				                            </li>
+				                            <li>
+				                                <span><i class="icon-leaf"></i> Great Grand Child</span> <a href="">Goes somewhere</a>
+				                            </li>
+				                        </ul>
+				                    </li>
+				                    <li>
+				                        <span><i class="icon-leaf"></i> Grand Child</span> <a href="">Goes somewhere</a>
+				                    </li>
+				                </ul>
+				            </li>
+				        </ul>
+				    </li>
+				    <li class="parent_li" id="tree2">
+				        <span title="Collapse this branch"><i class="icon-folder-close"></i> Parent2</span> <a href="">Goes somewhere</a>
+				        <ul>
+				            <li style="display: none;">
+				            	<span><i class="icon-leaf"></i> Child</span> <a href="">Goes somewhere</a>
+					        </li>
+					    </ul>
+				    </li>
+				</ul>
+			</div> -->
+
+
+				<div class="col-md-12 pull-right" style="margin-bottom:10px;">
+					<button type="button" class="btn btn-md btn-primary col-md-6" id ="search">Search</button>	
+				</div>
+				<div class="col-md-12 pull-left">
+					<span class="col-md-2" style="margin-top: 5px;">Search by Flow Name:</span>
+					<div class="col-md-4">
+						<input type="text" class="form-control" name="id" id="id" style="margin-top: 5px;"/>
+					</div>			
+				</div>
+				<div class="col-md-12 pull-left">
+					<span class="col-md-2" style="margin-top: 5px;">Search by App Name:</span>
+					<div class="col-md-4">
+						<input type="text" class="form-control" name="id" id="app_name" style="margin-top: 5px;"/>
+					</div>			
+				</div>
+				<div class="col-md-12 pull-left" style="margin-bottom:15px;">
+					<span class="col-md-2" style="margin-top: 5px;">Search by Co. Code:</span>
+					<div class="col-md-4">
+						<input type="text" class="form-control" name="id" id="co_code" style="margin-top: 5px;"/>
+					</div>			
+				</div>
+
+
+				<div class="col-md-12 pull-left">
+					<div class="col-md-12"  style="position:fixed;position:absolute;top:0;bottom:0;left:0;right:0;">
+						<a id="expander" onclick=expandALL()>Expand All</a>
+						<span class"pull-right"> </span>
+						<div class="tree col-md-12" id="test_tree" style="height: 475px; overflow-y:auto;">
+							<ul>
+
+							</ul>
+						</div>
+					</div>				
+				</div>
+
+
+<!-- 			<div class="tree">
+				<ul>
+				    <li class="parent_li">
+				        <span title="Collapse this branch"><i class="icon-calendar"></i> 2013, Week 2</span>
+				        <ul>
+				            <li class="parent_li">
+				            	<span title="Collapse this branch" class="badge badge-success"><i class="icon-minus-sign"></i> Monday, January 7: 8.00 hours</span>
+				                <ul>
+				                    <li>
+				                        <a href=""><span><i class="icon-time"></i> 8.00</span> – Changed CSS to accomodate...</a>
+				                    </li>
+				                </ul>
+				            </li>
+				            <li class="parent_li">
+				            	<span title="Collapse this branch" class="badge badge-success"><i class="icon-minus-sign"></i> Tuesday, January 8: 8.00 hours</span>
+				                <ul>
+				                    <li>
+				                        <span><i class="icon-time"></i> 6.00</span> – <a href="">Altered code...</a>
+				                    </li>
+				                    <li>
+				                        <span><i class="icon-time"></i> 2.00</span> – <a href="">Simplified our approach to...</a>
+				                    </li>
+				                </ul>
+				            </li>
+				            <li class="parent_li">
+				            	<span title="Collapse this branch" class="badge badge-warning"><i class="icon-minus-sign"></i> Wednesday, January 9: 6.00 hours</span>
+				                <ul>
+				                    <li>
+				                        <a href=""><span><i class="icon-time"></i> 3.00</span> – Fixed bug caused by...</a>
+				                    </li>
+				                    <li>
+				                        <a href=""><span><i class="icon-time"></i> 3.00</span> – Comitting latest code to Git...</a>
+				                    </li>
+				                </ul>
+				            </li>
+				            <li class="parent_li">
+				            	<span title="Collapse this branch" class="badge badge-important"><i class="icon-minus-sign"></i> Wednesday, January 9: 4.00 hours</span>
+				                <ul>
+				                    <li>
+				                        <a href=""><span><i class="icon-time"></i> 2.00</span> – Create component that...</a>
+				                    </li>
+				                </ul>
+				            </li>
+				        </ul>
+				    </li>
+				    <li class="parent_li">
+				        <span title="Collapse this branch"><i class="icon-calendar"></i> 2013, Week 3</span>
+				        <ul>
+				            <li class="parent_li">
+				            	<span title="Collapse this branch" class="badge badge-success"><i class="icon-minus-sign"></i> Monday, January 14: 8.00 hours</span>
+				                <ul>
+				                    <li>
+				                        <span><i class="icon-time"></i> 7.75</span> – <a href="">Writing documentation...</a>
+				                    </li>
+				                    <li>
+				                        <span><i class="icon-time"></i> 0.25</span> – <a href="">Reverting code back to...</a>
+				                    </li>
+				                </ul>
+				            </li>
+					    </ul>
+				    </li>
+				</ul>
+			</div> -->
+		</div>
+	</div>
+	</body>
+</html>
+
+

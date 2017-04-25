@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+	    <meta http-equiv="X-UA-Compatible" content="IE=edge">	
+	    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	    <title>Create Flows</title>
+
+	    <!-- Custom CSS Settings -->
+	    <link href="/css/E2E_Custom.css" rel="stylesheet">
+	    <link href="/css/bootstrap.min.css" rel="stylesheet">
+		<link href="/css/flat-ui.css" rel="stylesheet">
+		<link href="/css/demo.css" rel="stylesheet">
+		<link href="/css/bootstrap-theme.css" rel="stylesheet">
+		<link href="/css/user-dropdown.css" rel="stylesheet">
+
+		<!-- jQuery -->
+		<script src="/js/jquery-2.0.2.min.js"></script>
+		<script src="/js/jquery.jstree.js"></script>
+		<script src="/js/jquery.validate.js"></script>
+
+		<!-- Bootstrap Core -->
+		<script src="/js/bootstrap.js"></script>
+
+		<!-- Bootstrap Dialog -->
+		<link href="/css/bootstrap-dialog.min.css" rel="stylesheet" type="text/css" />
+		<script src="/js/bootstrap-dialog.min.js"></script>
+
+		<!-- Validation for flow creation rules -->
+		<script type="text/javascript" language="javascript" src="/js/flows/flow.validation.js"></script>
+		
+		<!-- Ladda spinning button animations -->
+		<link rel="stylesheet" href="/css/ladda-themeless.min.css">
+		<script src="/js/spin.min.js"></script>
+		<script src="/js/ladda.min.js"></script>
+
+		<script type="text/javascript">
+			var flowName = "";		
+
+			$(function(){
+				// Hack for IE cache problem; for some reason IE caches all ajax
+				$.ajaxSetup({ cache: false });
+
+				//trigger submit data
+				$('#submit_data').on('click',function(){
+					// myApp.showPleaseWait();
+				 
+					// Stop form from submitting normally
+					// event.preventDefault();
+
+					// Get some values from elements on the page:
+					var $form = $('#submit_data');
+					flowname = "";//$form.find( "input[name='flowname']" ).val(),
+					flowdes = "";//$form.find( "input[name='flowdes']" ).val(),
+					createby = "";//$form.find( "input[name='createby']" ).val(),
+					url = $form.attr( "action" );
+
+					// Get an array of the selected Apps
+					var options = $('#select2 option');
+					var apps = $.map(options ,function(option) {
+						return option.value;
+					});
+
+					
+				    var temp = "";
+				    $('#select2 option').each(function() {
+				        temp = $(this).text();
+				        arrTemp = temp.split(' - '); 
+				        flowName += arrTemp[1] + " > ";
+				    });
+				    flowName = flowName.substring(0, flowName.length - 3);
+
+					// Validate at least 2 apps are in the flow
+					if (apps.length > 1) {
+						duplicateDataCheck( function ( dupes ) { 
+							if (dupes == 0) {
+								// Send the data using post
+								var posting = $.post( url, { flowname: flowname, flowdes: flowdes, createby: createby, apps: apps} );
+
+								posting.done(function( data ) {
+									BootstrapDialog.show({
+						        		type: BootstrapDialog.TYPE_INFO,
+										title: 'New Flow Created', 
+										message: 'Flow Created Successfully!\n\n[ '+data+' ] ' + flowName,
+							            buttons: [{
+							                label: 'Close',
+							                cssClass: 'btn-info',
+							                action: function(dialogItself){
+							                    dialogItself.close();
+							                }
+							            }],
+										onhidden: function(dialogRef){
+											$('#submit_data').attr('disabled', false);
+											Ladda.stopAll();
+											window.location.reload(true);
+						        		}
+							        });
+								});
+
+								posting.fail(function (xhr, ajaxOptions, thrownError) {
+									//throw the ruby exception error message --- Joseph
+									var error_type=xhr.responseText.split("Ruby Error")[1];
+				            		var error_message=xhr.responseText.split("Ruby Error")[2];
+				            		var error_location=xhr.responseText.split("Ruby Error")[3];
+				            		//HTML to show the error location in the textarea
+				            		var details="<head><b>Details:</b></head><div><textarea readonly="+"readonly"+" rows="+"6"+" cols="+"60"+" style=resize:"+"none"+">"+error_location+"</textarea></div>";
+				            		BootstrapDialog.show({
+					        			type: BootstrapDialog.TYPE_DANGER,
+										title: 'Save Error',
+										//message: details, 
+										message: "<b>Error Type: </b>" + error_type + "<br><b>Error message: </b>"+error_message+"<div style='position: relative;left: 30px;'><br>" +"</div>" + details,
+						            	buttons: [{
+						                	label: 'Close',
+						                	cssClass: 'btn-danger',
+						                	action: function(dialogItself){
+						                    dialogItself.close();
+						                	}
+						            	}],
+						            	onhidden: function(dialogRef){
+						            		$('#submit_data').attr('disabled', false);
+						            		Ladda.stopAll();	
+					        			}
+						        	});
+						        	
+									/*BootstrapDialog.show({
+						        		type: BootstrapDialog.TYPE_DANGER,
+										title: 'Flow Data Save Error', 
+										message: xhr.status + ' : ' + thrownError + '\n\n' + xhr.responseText,
+							            buttons: [{
+							                label: 'Close',
+							                cssClass: 'btn-danger',
+							                action: function(dialogItself){
+							                    dialogItself.close();
+							                }
+							            }],
+							            onhidden: function(dialogRef){
+							            	$('#submit_data').attr('disabled', false);
+							            	Ladda.stopAll();
+						        		}
+							        });*/
+								});								
+							} else {
+						        BootstrapDialog.show({
+					        		type: BootstrapDialog.TYPE_DANGER,
+									title: 'Duplicate Data!', 
+									message: 'The Database already contains the Flow:\n\n' + flowName,
+						            buttons: [{
+						                label: 'Close',
+						                cssClass: 'btn-danger',
+						                action: function(dialogItself){
+						                    dialogItself.close();
+						                }
+						            }],
+						            onhidden: function(dialogRef){
+						            	$('#submit_data').attr('disabled', false);
+						            	Ladda.stopAll();
+					        		}
+						        });
+							}
+						})
+					}else{
+				        BootstrapDialog.show({
+			        		type: BootstrapDialog.TYPE_DANGER,
+							title: 'Flow Length Error!', 
+							message: "Flows must contain at least 2 Apps!",
+				            buttons: [{
+				                label: 'Close',
+				                cssClass: 'btn-danger',
+				                action: function(dialogItself){
+				                    dialogItself.close();
+				                }
+				            }],
+				            onhidden: function(dialogRef){
+				            	$('#submit_data').attr('disabled', false);
+				            	Ladda.stopAll();
+			        		}
+				        });
+					}
+					// myApp.hidePleaseWait();
+				})
+
+				$('#sequp').click(function() {
+					// myApp.showPleaseWait();
+					// Move selected apps up 1 spot if possible
+				    $('#select2 option:selected').each( function() {
+				        var newPos = $('#select2 option').index(this) - 1;
+				        if (newPos > -1) {
+				            $('#select2 option').eq(newPos).before("<option value='"+$(this).val()+"' selected='selected'>"+$(this).text()+"</option>");
+				            $(this).remove();
+				        }
+				    });
+				});
+
+				$('#seqdown').click(function() {
+					// Move selected apps down 1 spot if possible
+				    var countOptions = $('#select2 option').size();
+				    $('#select2 option:selected').each( function() {
+				        var newPos = $('#select2 option').index(this) + 1;
+				        if (newPos < countOptions) {
+				            $('#select2 option').eq(newPos).after("<option value='"+$(this).val()+"' selected='selected'>"+$(this).text()+"</option>");
+				            $(this).remove();
+				        }
+				    });	
+				});
+
+			    //移到右边
+			    $('#add').click(function() {
+			    //获取选中的选项，删除并追加给对方
+			        $('#select2').append($('#select1 option:selected').clone());
+			        //var appval = '<option value="'+$('#select1 option:selected').val()+'" selected>'+$('#select1 option:selected').val()+'</option>';
+			        //alert("124");
+			        // $('#select1 option:selected').appendTo('#select2');
+			        
+			        // $('#select1').before(appval);
+
+			    });
+			    //移到左边
+			    $('#remove').click(function() {
+			        $('#select2 option:selected').remove();
+			    });
+			    //全部移到右边
+			    $('#add_all').click(function() {
+			        //获取全部的选项,删除并追加给对方
+			         $('#select2').append($('#select1 option').clone());
+			    });
+			    //全部移到左边
+			    $('#remove_all').click(function() {
+			        //$('#select2 option').appendTo('#select1');
+			        $('#select2 option').remove();
+			    });
+			    //双击选项
+			    $('#select1').dblclick(function(){ //绑定双击事件
+			        //获取全部的选项,删除并追加给对方
+			        $("option:selected",this).appendTo('#select2'); //追加给对方
+			    });
+			    //双击选项
+			    $('#select2').dblclick(function(){
+			       $("option:selected",this).appendTo('#select1');
+			    });
+			});
+
+
+			function searchApp(x){
+				var value=document.getElementById(x).value
+
+				// Replace special characters
+		    	value = value.replace(/\//g, "¶");
+		    	value = value.replace(/\./g, "Ð");
+
+				if (value==""){
+					url = "/viewallapps"
+				}else
+				{
+					url = "/submitjson/"+value
+				}
+				$.getJSON(url,function(data){
+		 			$("#select1").html("");
+		 			$.each(data,function(i, item){
+		 				$("#select1").append('<option value ="' + item.id + '">' + item.project_id + ' - ' + item.app_name + '</option>');
+		 			})
+		 		})
+			}
+
+			function resetFields(){
+				$('#searchbox').val('');
+				searchApp('searchbox');
+				$('#select2').html('');
+			}	
+
+		</script> 
+	</head>
+
+	<style type="text/css">
+		body {
+
+		  line-height: 1.44;
+		}
+
+		html {
+	        /* Size of largest container or bigger */
+	        min-width: 1280px;
+	    }	
+	</style>
+
+	<body>
+		<header class="navbar navbar-default navbar-static-top" style="height:58px; border-color: #e7e7e7;border-bottom: 1px solid transparent;">
+			<div class="container" style="padding-left: 0px;">
+				<img src="/img/HP-Log/HP_Blue_RGB_150_MN.png" class="img-responsive pull-left" alt="Responsive image">
+				<a href="/main#" class="navbar-brand" style="padding-top:15px;">E2E Testing Library</a>
+			<button class="navbar-toggle" data-toggle="collapse" data-target=".navHeaderCollapse">
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+				<div class="collapse navbar-collapse navHeaderCollapse">
+					<div class="btn-group pull-right" style="top: 15px; left: 15px;">
+					  <button type="button" class="btn btn-sm btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false" style="background: white; border-color: #dddddd;"><i class="glyphicon glyphicon-user" style="color: grey;"></i>
+					    <span style="padding-right: 10px; padding-left: 5px; color: grey;">john.doe@hp.com (Admin)</span><span class="caret" style="border-width: 4px 4px;"></span>
+					  </button>
+					  <ul class="dropdown-menu" role="menu" style="margin-top: 2px;">
+					    <li><a href="/dashboard_flows_proj">Admin Dashboard</a></li>
+					    <li class="divider"></li>
+					    <li><a href="#">Log Out</a></li>
+					  </ul>
+					</div>
+				</div>
+			</div>
+		</header>
+
+		<div class ="container col-xs-12 col-md-12">
+			<div class="row">
+				<div class="panel panel-default">
+					<div class="panel-body">
+						<div class='col-sm-6'>
+							<class="panel-title" style="font-size: 240%; font-weight: bold;">New Flow
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>	
+
+		<div class="container col-md-12">
+			<div class="row">
+				<div class="panel panel-body panel-default">
+			 		<label class="pull-right" style="margin-right: 30px;"><h8><b>Note:</b> Please select Applications to be included in the Flow from list the on the left.</h8></label>
+			 		<br><br>
+					<div class="container col-md-12 col-xs-12">					 
+						<div>
+							<div class="col-md-5 col-xs-5">
+								<label class="pull-left" style="position: absolute;"><h6>Application List:</h6></label>
+								<!-- <form style="margin-top: 5px;"> -->
+								<div class="form-group">
+									<input type="text" name="searchcondition" class="form-control search-field" value placeholder="Search by Application..." id="searchbox" style="margin-top: 45px;" oninput="searchApp(this.id)"/>
+								</div>
+								<!-- </form>							 -->
+								<select multiple="multiple" id="select1" class= "form-control" style="height:300px;">
+						          	<%@apps.each do |app| %>
+										<option value ="<%=app.id%>"><%=app.project_id%> - <%=app.app_name%></option>
+									<% end %>
+						        </select>
+						    </div>
+						    <div class="col-md-2 col-xs-2" style="left: 30px; margin-top: 35px;"> 
+								<span id="add">
+									<input type="button" class="btn btn-info" style="width:100px; height:40px; margin-top:10px; cursor:pointer;" value="Add"/>
+								</span><br />
+
+								<span id="remove">
+									<input type="button" class="btn btn-info" style="width:100px; height:40px; margin-top:10px; cursor:pointer;" value="Delete"/>
+								</span><br />
+
+								<span id="remove_all">
+									<input type="button" class="btn btn-info" style="width:100px; height:40px; margin-top:10px; cursor:pointer;" value="Delete All"/>
+								</span><br> 
+
+								<span id="up">
+								  <button type="button" class="btn btn-default " title="Move selected New Flow elements up in the sequence." id="sequp" style="width:100px; height: 40px; margin-top:120px; cursor:pointer;" ><span class="glyphicon glyphicon-chevron-up"></span></button>	         
+								</span><br>
+
+								<span id="down">
+								  <button type="button" class="btn btn-default " title="Move selected New Flow elements down in the sequence." id="seqdown" style="width:100px; height: 40px; margin-top:10px; cursor:pointer;"><span class="glyphicon glyphicon-chevron-down"></span></button>	
+								</span> 		
+
+						    </div>
+						    <div class="col-md-5 col-xs-5 pull-right">
+						    	<label><h6>New Flow List:</h6></label>
+						    	<select multiple="multiple" id="select2" name="apps[]" class= "form-control" style="height:355px;"> 
+						        </select>
+						    </div>
+						</div>		
+					<!--/table-->
+			    	</div>
+			    	<br><br>
+
+					<div class="container pull-right">
+						<tr>
+							<td>
+								<button type="submit" value="Submit" class="btn btn-primary btn-lg ladda-button" data-style="zoom-in" id ="submit_data" style="width:100px;" onClick="this.disabled=true;"><span class="glyphicon glyphicon-floppy-disk"></span> Save</button>
+							</td>
+							<td>
+								<button type="reset" class="btn btn btn-primary btn-lg" id ="reset_data" style="width:100px;" onclick=resetFields()><span class="glyphicon glyphicon-repeat"></span> Reset</button>
+							</td>
+							<td>
+								<a class="btn btn btn-warning btn-lg" data-dismiss="modal" style="width:110px;" href="/main"><span class="glyphicon glyphicon-ban-circle"></span> Cancel</a>
+							</td>
+						</tr>
+					</div>
+				</div>
+			</div>
+		</div>
+		<script>
+			// Bind normal buttons
+			Ladda.bind( '#submit_data');
+		</script>		
+	</body>
+</html>

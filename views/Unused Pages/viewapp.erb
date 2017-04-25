@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Bootstrap 101 Template</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
+
+	<!-- Optional theme -->
+	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-theme.min.css">
+
+	<!-- Latest compiled and minified JavaScript -->
+	<script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+
+  </head>
+  <body>
+    <h1>APP列表</h1>
+    <div class="bs-docs-example">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>APP Name</th>
+                  <th>APP_Alias</th>
+                  <th>CreatedTime</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+              	<% @app.each do |item|%>
+                <tr class="success">
+                  <td><%=item.project_id %></td>
+                  <td><%=item.app_name%></td>
+                  <td><%=item.app_alias%></td>
+                  <td><%=item.create_at%></td>
+                  <th>
+                    <form action="/app/<%=item.id%>" method="post">
+                      <input type="hidden" name="_method" value="DELETE"></input>
+                      <input type="submit" value="Delete"></input>
+                    </form>
+                     <form action="/app/<%=item.id%>" method="post">
+                      <input type="hidden" name="_method" value="PUT"></input>
+                      <input type="submit" value="Update"></input>
+                    </form>
+                  </th>
+                </tr>
+                <% end %>
+              </tbody>
+            </table>
+    </div>
+</div></div>
+  </body>
+</html>

@@ -1,0 +1,113 @@
+body {
+  font-size: 140%;
+  line-height: 1.44;
+}
+
+html {
+    /* Size of largest container or bigger */
+    min-width: 1280px;
+}
+
+.panel-green {
+    border-color: #5cb85c;
+}
+
+.panel-green > .panel-heading {
+    border-color: #5cb85c;
+    color: #fff;
+    background-color: #5cb85c;
+}
+
+.panel-green > a {
+    color: #5cb85c;
+}
+
+.panel-green > a:hover {
+    color: #3d8b3d;
+}
+
+.panel-red {
+    border-color: #d9534f;
+}
+
+.panel-red > .panel-heading {
+    border-color: #d9534f;
+    color: #fff;
+    background-color: #d9534f;
+}
+
+.panel-red > a {
+    color: #d9534f;
+}
+
+.panel-red > a:hover {
+    color: #b52b27;
+}
+
+.panel-yellow {
+    border-color: #f0ad4e;
+}
+
+.panel-yellow > .panel-heading {
+    border-color: #f0ad4e;
+    color: #fff;
+    background-color: #f0ad4e;
+}
+
+.panel-yellow > a {
+    color: #f0ad4e;
+}
+
+.panel-yellow > a:hover {
+    color: #df8a13;
+}
+
+div.DTTT { margin-bottom: 0.5em; float: right; }
+div.dataTables_wrapper { clear: both; }
+
+#ToolTables_stats_0 { height: 30px; margin-right: 4px; }
+
+#ToolTables_stats_1 { height: 30px; }           
+
+.DTTT.btn-group { top: -55px; margin-bottom: -30px; }
+
+.dropdown-menu {
+  visibility: visible;
+  width: 5%;
+}   
+
+.navbar-default .navbar-nav>.active>a, .navbar-default .navbar-nav>.active>a:hover, .navbar-default .navbar-nav>.active>a:focus {
+  color: #fff;
+  background-color: #397db9;
+}   
+
+.navbar .nav > li.active > a, .navbar .nav > li.active > a:hover, .navbar .nav > li.active > a:focus {
+  background-color: #397db9;
+  color: #fff;
+}   
+
+.navbar .nav > li:first-child > a {
+  border-radius: 0 0 0 0px;
+}
+
+.navbar .nav > li > a {
+  font-weight: normal;
+  font-size: 15px;
+  line-height: 20px;
+  padding: 15px 15px;
+}
+
+.side-nav>li>ul>li>a {
+  display: block;
+  padding: 10px 15px 10px 38px;
+  text-decoration: none;
+  color: #999;
+}
+
+.side-nav>li>ul>li.selected>a {
+  display: block;
+  padding: 10px 15px 10px 38px;
+  text-decoration: none;
+  background-color: #a8a8a8;
+  color: #fff;
+}

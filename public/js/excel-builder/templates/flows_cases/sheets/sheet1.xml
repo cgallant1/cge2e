@@ -1,0 +1,172 @@
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:x14ac="http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac" mc:Ignorable="x14ac">
+   <dimension ref="A21:D31" />
+   <sheetViews>
+      <sheetView tabSelected="1" workbookViewId="0">
+         <selection activeCell="G15" sqref="G15" />
+      </sheetView>
+   </sheetViews>
+   <sheetFormatPr defaultRowHeight="15" />
+   <cols>
+      <col min="1" max="1" width="15" customWidth="1" />
+      <col min="2" max="2" width="72.140625" customWidth="1" />
+      <col min="3" max="4" width="30" customWidth="1" />
+   </cols>
+   <sheetData>
+      <row r="21" spans="1:4">
+         <c r="A21" s="1" t="s">
+            <v>0</v>
+         </c>
+         <c r="B21" s="1" t="s">
+            <v>1</v>
+         </c>
+         <c r="C21" s="1" t="s">
+            <v>2</v>
+         </c>
+         <c r="D21" s="1" t="s">
+            <v>3</v>
+         </c>
+      </row>
+      <row r="22" spans="1:4">
+         <c r="A22" t="s">
+            <v>4</v>
+         </c>
+         <c r="B22" t="s">
+            <v>5</v>
+         </c>
+         <c r="C22">
+            <v>25</v>
+         </c>
+         <c r="D22">
+            <v>13</v>
+         </c>
+      </row>
+      <row r="23" spans="1:4">
+         <c r="A23" t="s">
+            <v>19</v>
+         </c>
+         <c r="B23" t="s">
+            <v>20</v>
+         </c>
+         <c r="C23">
+            <v>16</v>
+         </c>
+         <c r="D23">
+            <v>11</v>
+         </c>
+      </row>
+      <row r="24" spans="1:4">
+         <c r="A24" t="s">
+            <v>29</v>
+         </c>
+         <c r="B24" t="s">
+            <v>30</v>
+         </c>
+         <c r="C24">
+            <v>13</v>
+         </c>
+         <c r="D24">
+            <v>6</v>
+         </c>
+      </row>
+      <row r="25" spans="1:4">
+         <c r="A25" t="s">
+            <v>33</v>
+         </c>
+         <c r="B25" t="s">
+            <v>34</v>
+         </c>
+         <c r="C25">
+            <v>10</v>
+         </c>
+         <c r="D25">
+            <v>5</v>
+         </c>
+      </row>
+      <row r="26" spans="1:4">
+         <c r="A26" t="s">
+            <v>37</v>
+         </c>
+         <c r="B26" t="s">
+            <v>41</v>
+         </c>
+         <c r="C26">
+            <v>9</v>
+         </c>
+         <c r="D26">
+            <v>3</v>
+         </c>
+      </row>
+      <row r="27" spans="1:4">
+         <c r="A27" t="s">
+            <v>40</v>
+         </c>
+         <c r="B27" t="s">
+            <v>38</v>
+         </c>
+         <c r="C27">
+            <v>7</v>
+         </c>
+         <c r="D27">
+            <v>5</v>
+         </c>
+      </row>
+      <row r="28" spans="1:4">
+         <c r="A28" t="s">
+            <v>45</v>
+         </c>
+         <c r="B28" t="s">
+            <v>46</v>
+         </c>
+         <c r="C28">
+            <v>5</v>
+         </c>
+         <c r="D28">
+            <v>3</v>
+         </c>
+      </row>
+      <row r="29" spans="1:4">
+         <c r="A29" t="s">
+            <v>48</v>
+         </c>
+         <c r="B29" t="s">
+            <v>49</v>
+         </c>
+         <c r="C29">
+            <v>4</v>
+         </c>
+         <c r="D29">
+            <v>3</v>
+         </c>
+      </row>
+      <row r="30" spans="1:4">
+         <c r="A30" t="s">
+            <v>51</v>
+         </c>
+         <c r="B30" t="s">
+            <v>52</v>
+         </c>
+         <c r="C30">
+            <v>3</v>
+         </c>
+         <c r="D30">
+            <v>2</v>
+         </c>
+      </row>
+      <row r="31" spans="1:4">
+         <c r="A31" t="s">
+            <v>54</v>
+         </c>
+         <c r="B31" t="s">
+            <v>55</v>
+         </c>
+         <c r="C31">
+            <v>2</v>
+         </c>
+         <c r="D31">
+            <v>2</v>
+         </c>
+      </row>
+   </sheetData>
+   <pageMargins left="0.7" right="0.7" top="0.75" bottom="0.75" header="0.3" footer="0.3" />
+   <drawing r:id="rId1" />
+</worksheet>

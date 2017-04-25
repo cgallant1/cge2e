@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+	    <meta http-equiv="X-UA-Compatible" content="IE=edge">	
+	    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	    <title>Create Apps</title>
+
+	    <!-- Custom CSS Settings -->
+	    <link href="/css/E2E_Custom.css" rel="stylesheet">
+	    <link href="/css/bootstrap.min.css" rel="stylesheet">
+		<link href="/css/flat-ui.css" rel="stylesheet">
+		<link href="/css/demo.css" rel="stylesheet">
+		<link href="/css/bootstrap-theme.css" rel="stylesheet">
+		<link href="/css/user-dropdown.css" rel="stylesheet">
+
+		<!-- jQuery -->
+		<script src="/js/jquery-2.0.2.min.js"></script>
+		<script src="/js/jquery.jstree.js"></script>
+		<script src="/js/jquery.validate.js"></script>
+
+		<!-- Bootstrap Core -->
+		<script src="/js/bootstrap.js"></script>
+		
+		<!-- Bootstrap Dialog -->
+		<link href="/css/bootstrap-dialog.min.css" rel="stylesheet" type="text/css" />
+		<script src="/js/bootstrap-dialog.min.js"></script>
+
+		<!-- Bootstrap Core -->
+		<script type="text/javascript" language="javascript" src="/js/apps/app.validation.js"></script>
+		
+		<!-- Ladda spinning button animations -->
+		<link rel="stylesheet" href="/css/ladda-themeless.min.css">
+		<script src="/js/spin.min.js"></script>
+		<script src="/js/ladda.min.js"></script>
+
+		<script type="text/javascript">
+
+			$(function(){
+				//trigger submit data
+				$('#submit_data').on('click',function(){
+					//Check for required fields
+					var failFields = "";
+					arrFail = checkRequiredFields();
+					if (arrFail.length > 0){
+						failFields = '\nFields [';
+						for ( var i = 0; i < arrFail.length; i = i + 1 ) {
+						    failFields += arrFail[i] + ', ';
+						}
+						failFields = failFields.substr(0, failFields.length - 2) + "]";					
+					}
+
+					duplicateDataCheck(function ( dupes ) { 
+						var data = {app_data:[]}
+						var appData = getAppData();	
+						data.app_data.push(appData);
+						// console.log(data);
+
+						if (arrFail.length == 0 && dupes == "ok") {
+					    	$.ajax({
+					            type: "POST",
+					            url: "/docreateapp",
+					            data: data,
+					            success: function(data){
+					            	var ppmid = $('#projectid').val();
+					            	var appname = $('#appname').val();
+						        	BootstrapDialog.show({
+						        		type: BootstrapDialog.TYPE_INFO,
+										title: 'New App Created', 
+										message: 'App: [ '+data+' ] '+ ppmid + ' - ' + appname + '\n\nCreated Successfully!',
+							            buttons: [{
+							                label: 'Close',
+							                cssClass: 'btn-info',
+							                action: function(dialogItself){
+							                    dialogItself.close();
+							                }
+							            }],
+										onhidden: function(dialogRef){
+											// window.location.assign('/test_case_edit/'+data);
+											$('#submit_data').attr('disabled', false);	
+											Ladda.stopAll();
+											window.location.reload(true);
+						        		}
+							        });
+
+					            },
+				                error: function (xhr, ajaxOptions, thrownError) {
+				                	//throw the ruby exception error message --- Joseph
+			                		var error_type=xhr.responseText.split("Ruby Error")[1];
+				            		var error_message=xhr.responseText.split("Ruby Error")[2];
+				            		var error_location=xhr.responseText.split("Ruby Error")[3];
+				            		//HTML to show the error location in the textarea
+				            		var details="<head><b>Details:</b></head><div><textarea readonly="+"readonly"+" rows="+"6"+" cols="+"60"+" style=resize:"+"none"+">"+error_location+"</textarea></div>";
+				            		BootstrapDialog.show({
+					        			type: BootstrapDialog.TYPE_DANGER,
+										title: 'Save Error',
+										//message: details, 
+										message: "<b>Error Type: </b>" + error_type + "<br><b>Error message: </b>"+error_message+"<div style='position: relative;left: 30px;'><br>" +"</div>" + details,
+						            	buttons: [{
+						                	label: 'Close',
+						                	cssClass: 'btn-danger',
+						                	action: function(dialogItself){
+						                    dialogItself.close();
+						                	}
+						            	}],
+						            	onhidden: function(dialogRef){
+						            		$('#submit_data').attr('disabled', false);
+						            		Ladda.stopAll();	
+					        			}
+						        	});
+							        /*BootstrapDialog.show({
+						        		type: BootstrapDialog.TYPE_DANGER,
+										title: 'App Data Save Error', 
+										message: xhr.status + ' : ' + thrownError + '\n\n' + xhr.responseText,
+							            buttons: [{
+							                label: 'Close',
+							                cssClass: 'btn-danger',
+							                action: function(dialogItself){
+							                    dialogItself.close();
+							                }
+							            }],
+							            onhidden: function(dialogRef){
+							            	$('#submit_data').attr('disabled', false);
+							            	Ladda.stopAll();	
+						        		}
+							        });*/
+				                }
+					        });
+						} else if (dupes == "ppmid") {
+					        BootstrapDialog.show({
+				        		type: BootstrapDialog.TYPE_DANGER,
+								title: 'Duplicate Data!', 
+								message: 'The Database already contains an App with this Project ID: ' + $('#projectid').val(),
+					            buttons: [{
+					                label: 'Close',
+					                cssClass: 'btn-danger',
+					                action: function(dialogItself){
+					                    dialogItself.close();
+					                }
+					            }],
+					            onhidden: function(dialogRef){
+					            	$('#submit_data').attr('disabled', false);
+					            	Ladda.stopAll();
+				        		}
+					        });
+						} else if (dupes == "appname") {
+					        BootstrapDialog.show({
+				        		type: BootstrapDialog.TYPE_DANGER,
+								title: 'Duplicate Data!', 
+								message: 'The Database already contains an App with this App Name: ' + $('#appname').val(),
+					            buttons: [{
+					                label: 'Close',
+					                cssClass: 'btn-danger',
+					                action: function(dialogItself){
+					                    dialogItself.close();
+					                }
+					            }],
+					            onhidden: function(dialogRef){
+					            	$('#submit_data').attr('disabled', false);
+					            	Ladda.stopAll();
+				        		}
+					        });										        						
+						} else {
+					        BootstrapDialog.show({
+				        		type: BootstrapDialog.TYPE_DANGER,
+								title: 'Required fields missing data!', 
+								message: failFields,
+					            buttons: [{
+					                label: 'Close',
+					                cssClass: 'btn-danger',
+					                action: function(dialogItself){
+					                    dialogItself.close();
+					                }
+					            }],
+					            onhidden: function(dialogRef){
+					            	$('#submit_data').attr('disabled', false);
+					            	Ladda.stopAll();
+				        		}
+					        });
+						}
+					})
+				})
+			})
+
+			function getAppData(){
+				var json = {data:[]};
+				var data = new Object;
+				data['projectid'] = $('#projectid').val();
+				data['appname'] = $('#appname').val();
+				data['appalias'] = $('#appalias').val();
+				data['appdes'] = $('#appdes').val();
+				data['l2owner'] = $('#l2owner').val();
+				data['l3owner'] = $('#l3owner').val();
+				data['createby'] = $('#createby').val();
+				json.data.push(data);
+				return json
+			}
+		</script>
+
+		<style type="text/css">
+			body {
+
+			  line-height: 1.44;
+			}
+
+			html {
+		        /* Size of largest container or bigger */
+		        min-width: 1280px;
+		    }	   
+		</style>
+	</head>
+
+	<body>
+		<header class="navbar navbar-default navbar-static-top" style="height:58px; border-color: #e7e7e7; border-bottom: 1px solid transparent;">
+			<div class="container" style="padding-left: 0px;">
+				<img src="/img/HP-Log/HP_Blue_RGB_150_MN.png" class="img-responsive pull-left" alt="Responsive image">
+				<a href="/main#" class="navbar-brand" style="padding-top:15px;">E2E Testing Library</a>
+				<button class="navbar-toggle" data-toggle="collapse" data-target=".navHeaderCollapse"></button>
+				<div class="collapse navbar-collapse navHeaderCollapse">
+					<div class="btn-group pull-right" style="top: 15px; left: 15px;">
+						<button type="button" class="btn btn-sm btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false" style="background: white; border-color: #dddddd;"><i class="glyphicon glyphicon-user" style="color: grey;"></i>
+							<span style="padding-right: 10px; padding-left: 5px; color: grey;">john.doe@hp.com (Admin)</span><span class="caret" style="border-width: 4px 4px;"></span>
+						</button>
+						<ul class="dropdown-menu" role="menu" style="margin-top: 2px;">
+							<li><a href="/dashboard_flows_proj">Admin Dashboard</a></li>
+							<li class="divider"></li>
+							<li><a href="#">Log Out</a></li>
+						</ul>
+					</div>
+				</div>
+			</div>
+		</header>
+
+		<div class ="container col-xs-12 col-md-12">
+			<div class="row">
+				<div class="panel panel-default">
+					<div class="panel-body">
+						<div class='col-sm-6'>
+							<class="panel-title" style="font-size: 240%; font-weight: bold;">New App
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>		
+
+		<div class="container col-xs-12 col-md-12">
+			<div class="row">
+				<div class="custompanel custompanel-body custompanel-default">
+					<form name="myform" method="post">
+						<table>
+							<label class="control-label pull-right"><h8><font color="red"><b>*</b> Required Fields</h8></font></label>
+							<div class="container col-md-12">
+				   	 		  <div class="form-group">
+							    <label class="col-md-2 col-xs-2 control-label" style="font-size:large;top: 5px;">App ID* ：</label>
+							    <div class="col-md-6 col-xs-6">
+							      <input type="text" class="form-control" name="projectid" id="projectid" placeholder="Input the App ID.." onkeydown="return isNumberKey(event, '#ppm_warning',this.value)" maxlength="6"/>
+							    </div>
+						    		<span class="label label-warning" id='ppm_warning' style='visibility:hidden'>Only numeric input accepted.</span>				
+							  </div>
+							</div>
+							<br>
+
+							<div class="container col-md-12">
+				   	 		  <div class="form-group">
+							    <label class="col-md-2 col-xs-2 control-label" style="font-size:large;top: 5px;">App Name* ：</label>
+							    <div class="col-md-6 col-xs-6">
+							      <input type="text" class="form-control"  name="appname" id="appname" placeholder="Input the App Name.." onkeydown="return validCharacters(event, '#appname_warning',this.value)" maxlength="128"/>
+							    </div>
+						    		<span class="label label-warning" id='appname_warning' style='visibility:hidden'>Only alphanumeric characters and [/ . ( ) - : @ _ & ,] accepted.</span>					
+							  </div>
+							</div>
+							<br>
+
+							<div class="container col-md-12">
+				   	 		  <div class="form-group">
+							    <label class="col-md-2 col-xs-2 control-label" style="font-size:large;top: 5px;">App Alias：</label>
+							    <div class="col-md-6 col-xs-6">
+							      <input type="text" class="form-control" name="appalias" id="appalias" placeholder="Input the App Alias.." maxlength="50"/>
+							    </div>
+							  </div>
+							</div>
+							<br>
+
+							<div class="container col-md-12">
+				   	 		  <div class="form-group">
+							    <label class="col-md-2 col-xs-2 control-label" style="font-size:large;top: 5px;">L2 Owner：</label>
+							    <div class="col-md-6 col-xs-6">
+							      <input type="text" class="form-control" name="l2owner" id="l2owner" placeholder="Input the L2 Owner.." maxlength="50"/>
+							    </div>
+							  </div>
+							</div>
+							<br>
+
+							<div class="container col-md-12">
+				   	 		  <div class="form-group">
+							    <label class="col-md-2 col-xs-2 control-label" style="font-size:large;top: 5px;">L3 Owner：</label>
+							    <div class="col-md-6 col-xs-6">
+							      <input type="text" class="form-control" name="l3owner" id="l3owner" placeholder="Input the L3 Owner.." maxlength="50"/>
+							    </div>
+							  </div>
+							</div>
+							<br>
+
+							<div class="container col-md-12">
+				   	 		  <div class="form-group">
+							    <label class="col-md-2 col-xs-2 control-label" style="font-size:large;top: 5px;">Create By：</label>
+							    <div class="col-md-6 col-xs-6">
+							      <input type="text" class="form-control" name="createby" id="createby" placeholder="Input who this was Created By.." maxlength="50"/>
+							    </div>
+							  </div>
+							</div>
+							<br>
+
+						</table>
+						<div class="container pull-right" style="margin-top: 40px;">
+							<tr>
+								<td>
+									<button type="button" class="btn btn-primary btn-lg ladda-button" data-style="zoom-in" id ="submit_data" style="width:100px;" value="Save" onClick="this.disabled=true;"><span class="glyphicon glyphicon-floppy-disk"></span> Save</button>
+								</td>
+								<td>
+									<button type="reset" class="btn btn btn-primary btn-lg" id ="reset_data" style="width:100px;" onclick=myfun_reset()><span class="glyphicon glyphicon-repeat"></span> Reset</button>
+								</td>
+								<td>
+									<a class="btn btn btn-warning btn-lg" data-dismiss="modal" style="width:110px;" href="/main"><span class="glyphicon glyphicon-ban-circle"></span> Cancel</a>
+								</td>
+							</tr>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+
+		<script>
+			// Bind normal buttons
+			Ladda.bind( '#submit_data');
+		</script>
+	</body>
+</html>
