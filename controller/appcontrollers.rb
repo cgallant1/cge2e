@@ -1,4 +1,3 @@
-#encoding: utf-8
 require "sinatra" 
 require "sinatra/reloader" if development?
 $LOAD_PATH.unshift(File.dirname(__FILE__))
@@ -6,11 +5,6 @@ require "model/models"
 #Include to read the excel
 require "parseexcel/parser"
 require "win32ole"
-
-# A Postgres connection:
-#ENV['DATABASE_URL']
-#ENV['HEROKU_POSTGRESQL_NAVY_URL']
-#DataMapper.setup(:default, ENV['HEROKU_POSTGRESQL_NAVY_URL'] ||'postgres://postgres:postgres@localhost/postgres')
 
 class AppHandler
 
